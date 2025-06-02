@@ -1,33 +1,87 @@
 
-import { Music } from "lucide-react";
+import { Music, Menu, X } from "lucide-react";
+import { useState } from "react";
 
 const Header = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   return (
-    <header className="fixed top-0 w-full z-50 bg-black/90 backdrop-blur-md border-b border-gray-800">
+    <header className="fixed top-0 w-full z-50 glass-effect border-b border-gray-800/50">
       <nav className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg animate-pulse-glow">
-              <Music className="h-6 w-6 text-white" />
+          <div className="flex items-center space-x-3 animate-slide-in-left">
+            <div className="p-2 spotify-green rounded-xl animate-pulse-glow">
+              <Music className="h-6 w-6 text-black" />
             </div>
-            <h1 className="text-2xl font-bold gradient-text">Lovable Lekompo</h1>
+            <h1 className="text-2xl font-black gradient-text">Lovable Lekompo</h1>
           </div>
           
-          <div className="hidden md:flex items-center space-x-8">
-            <a href="#home" className="text-gray-300 hover:text-white transition-all duration-300 hover:scale-105">
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-8 animate-slide-in-right">
+            <a href="#home" className="text-gray-300 hover:text-green-400 transition-all duration-300 hover:scale-105 font-medium relative group">
               Home
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-green-400 transition-all duration-300 group-hover:w-full"></span>
             </a>
-            <a href="#downloads" className="text-gray-300 hover:text-white transition-all duration-300 hover:scale-105">
+            <a href="#downloads" className="text-gray-300 hover:text-green-400 transition-all duration-300 hover:scale-105 font-medium relative group">
               Downloads
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-green-400 transition-all duration-300 group-hover:w-full"></span>
             </a>
-            <a href="#news" className="text-gray-300 hover:text-white transition-all duration-300 hover:scale-105">
+            <a href="#news" className="text-gray-300 hover:text-green-400 transition-all duration-300 hover:scale-105 font-medium relative group">
               News
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-green-400 transition-all duration-300 group-hover:w-full"></span>
             </a>
-            <a href="#videos" className="text-gray-300 hover:text-white transition-all duration-300 hover:scale-105">
+            <a href="#videos" className="text-gray-300 hover:text-green-400 transition-all duration-300 hover:scale-105 font-medium relative group">
               Videos
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-green-400 transition-all duration-300 group-hover:w-full"></span>
             </a>
           </div>
+
+          {/* Mobile Menu Button */}
+          <div className="md:hidden">
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="text-gray-300 hover:text-green-400 transition-colors p-2"
+            >
+              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
+          </div>
         </div>
+
+        {/* Mobile Navigation */}
+        {isMenuOpen && (
+          <div className="md:hidden mt-4 pb-4 animate-slide-up">
+            <div className="flex flex-col space-y-4">
+              <a 
+                href="#home" 
+                className="text-gray-300 hover:text-green-400 transition-colors font-medium"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Home
+              </a>
+              <a 
+                href="#downloads" 
+                className="text-gray-300 hover:text-green-400 transition-colors font-medium"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Downloads
+              </a>
+              <a 
+                href="#news" 
+                className="text-gray-300 hover:text-green-400 transition-colors font-medium"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                News
+              </a>
+              <a 
+                href="#videos" 
+                className="text-gray-300 hover:text-green-400 transition-colors font-medium"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Videos
+              </a>
+            </div>
+          </div>
+        )}
       </nav>
     </header>
   );
