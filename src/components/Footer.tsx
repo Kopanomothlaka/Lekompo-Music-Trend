@@ -1,5 +1,6 @@
 
 import { Music, Youtube, Instagram, Twitter, Facebook } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
@@ -8,12 +9,12 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
           {/* Brand Section */}
           <div className="lg:col-span-2 animate-slide-in-left">
-            <div className="flex items-center space-x-3 mb-6">
+            <Link to="/" className="flex items-center space-x-3 mb-6">
               <div className="p-3 spotify-green rounded-xl animate-pulse-glow">
                 <Music className="h-7 w-7 text-black" />
               </div>
               <h3 className="text-3xl font-black gradient-text">Lovable Lekompo</h3>
-            </div>
+            </Link>
             <p className="text-gray-400 mb-6 max-w-md leading-relaxed text-lg">
               Dedicated to preserving and promoting the beautiful Lekompo music genre. 
               Discover traditional rhythms, modern interpretations, and connect with artists worldwide.
@@ -38,10 +39,10 @@ const Footer = () => {
           <div className="animate-slide-up" style={{animationDelay: '0.1s'}}>
             <h4 className="text-white font-bold mb-6 text-lg">Quick Links</h4>
             <ul className="space-y-3">
-              <li><a href="#home" className="text-gray-400 hover:text-green-400 transition-colors duration-300 hover:translate-x-2 inline-block">Home</a></li>
-              <li><a href="#downloads" className="text-gray-400 hover:text-green-400 transition-colors duration-300 hover:translate-x-2 inline-block">Downloads</a></li>
-              <li><a href="#news" className="text-gray-400 hover:text-green-400 transition-colors duration-300 hover:translate-x-2 inline-block">News</a></li>
-              <li><a href="#videos" className="text-gray-400 hover:text-green-400 transition-colors duration-300 hover:translate-x-2 inline-block">Videos</a></li>
+              <li><Link to="/" className="text-gray-400 hover:text-green-400 transition-colors duration-300 hover:translate-x-2 inline-block">Home</Link></li>
+              <li><Link to="/downloads" className="text-gray-400 hover:text-green-400 transition-colors duration-300 hover:translate-x-2 inline-block">Downloads</Link></li>
+              <li><Link to="/news" className="text-gray-400 hover:text-green-400 transition-colors duration-300 hover:translate-x-2 inline-block">News</Link></li>
+              <li><Link to="/videos" className="text-gray-400 hover:text-green-400 transition-colors duration-300 hover:translate-x-2 inline-block">Videos</Link></li>
             </ul>
           </div>
           
