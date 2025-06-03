@@ -9,7 +9,138 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      news: {
+        Row: {
+          author: string | null
+          category: string | null
+          content: string | null
+          created_at: string
+          date: string
+          excerpt: string | null
+          featured: boolean | null
+          id: string
+          image_url: string | null
+          read_time: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author?: string | null
+          category?: string | null
+          content?: string | null
+          created_at?: string
+          date?: string
+          excerpt?: string | null
+          featured?: boolean | null
+          id?: string
+          image_url?: string | null
+          read_time?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author?: string | null
+          category?: string | null
+          content?: string | null
+          created_at?: string
+          date?: string
+          excerpt?: string | null
+          featured?: boolean | null
+          id?: string
+          image_url?: string | null
+          read_time?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      songs: {
+        Row: {
+          artist: string
+          created_at: string
+          download_url: string | null
+          duration: string | null
+          genre: string[] | null
+          id: string
+          image_url: string | null
+          plays: number | null
+          release_date: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          artist: string
+          created_at?: string
+          download_url?: string | null
+          duration?: string | null
+          genre?: string[] | null
+          id?: string
+          image_url?: string | null
+          plays?: number | null
+          release_date?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          artist?: string
+          created_at?: string
+          download_url?: string | null
+          duration?: string | null
+          genre?: string[] | null
+          id?: string
+          image_url?: string | null
+          plays?: number | null
+          release_date?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      videos: {
+        Row: {
+          channel: string | null
+          created_at: string
+          duration: string | null
+          featured: boolean | null
+          id: string
+          likes: string | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+          upload_date: string | null
+          video_url: string | null
+          views: string | null
+        }
+        Insert: {
+          channel?: string | null
+          created_at?: string
+          duration?: string | null
+          featured?: boolean | null
+          id?: string
+          likes?: string | null
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+          upload_date?: string | null
+          video_url?: string | null
+          views?: string | null
+        }
+        Update: {
+          channel?: string | null
+          created_at?: string
+          duration?: string | null
+          featured?: boolean | null
+          id?: string
+          likes?: string | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+          upload_date?: string | null
+          video_url?: string | null
+          views?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
