@@ -18,6 +18,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import Header from '@/components/Header';
 import { useToast } from '@/hooks/use-toast';
+import FileUpload from '@/components/FileUpload';
 
 const Admin = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -129,15 +130,6 @@ const Admin = () => {
           />
         </div>
         <div>
-          <Label htmlFor="image_url">Image URL</Label>
-          <Input
-            id="image_url"
-            value={formData.image_url}
-            onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-            placeholder="https://example.com/image.jpg"
-          />
-        </div>
-        <div>
           <Label htmlFor="duration">Duration</Label>
           <Input
             id="duration"
@@ -146,15 +138,23 @@ const Admin = () => {
             placeholder="3:45"
           />
         </div>
-        <div>
-          <Label htmlFor="download_url">Audio File URL</Label>
-          <Input
-            id="download_url"
-            value={formData.download_url}
-            onChange={(e) => setFormData({ ...formData, download_url: e.target.value })}
-            placeholder="https://example.com/song.mp3"
-          />
-        </div>
+        
+        <FileUpload
+          bucket="images"
+          accept="image/*"
+          label="Song Cover Image"
+          currentFile={formData.image_url}
+          onUpload={(url) => setFormData({ ...formData, image_url: url })}
+        />
+        
+        <FileUpload
+          bucket="songs"
+          accept="audio/*"
+          label="Audio File"
+          currentFile={formData.download_url}
+          onUpload={(url) => setFormData({ ...formData, download_url: url })}
+        />
+        
         <div className="flex gap-2">
           <Button type="submit" disabled={createSong.isPending}>
             {createSong.isPending ? 'Adding...' : 'Add Song'}
@@ -227,14 +227,6 @@ const Admin = () => {
           />
         </div>
         <div>
-          <Label htmlFor="thumbnail_url">Thumbnail URL</Label>
-          <Input
-            id="thumbnail_url"
-            value={formData.thumbnail_url}
-            onChange={(e) => setFormData({ ...formData, thumbnail_url: e.target.value })}
-          />
-        </div>
-        <div>
           <Label htmlFor="video-duration">Duration</Label>
           <Input
             id="video-duration"
@@ -252,6 +244,15 @@ const Admin = () => {
             placeholder="2024-01-15"
           />
         </div>
+        
+        <FileUpload
+          bucket="images"
+          accept="image/*"
+          label="Video Thumbnail"
+          currentFile={formData.thumbnail_url}
+          onUpload={(url) => setFormData({ ...formData, thumbnail_url: url })}
+        />
+        
         <div className="flex gap-2">
           <Button type="submit" disabled={createVideo.isPending}>
             {createVideo.isPending ? 'Adding...' : 'Add Video'}
@@ -342,14 +343,6 @@ const Admin = () => {
           />
         </div>
         <div>
-          <Label htmlFor="news-image_url">Image URL</Label>
-          <Input
-            id="news-image_url"
-            value={formData.image_url}
-            onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-          />
-        </div>
-        <div>
           <Label htmlFor="read_time">Read Time</Label>
           <Input
             id="read_time"
@@ -358,6 +351,15 @@ const Admin = () => {
             placeholder="5 min read"
           />
         </div>
+        
+        <FileUpload
+          bucket="images"
+          accept="image/*"
+          label="Article Image"
+          currentFile={formData.image_url}
+          onUpload={(url) => setFormData({ ...formData, image_url: url })}
+        />
+        
         <div className="flex gap-2">
           <Button type="submit" disabled={createNews.isPending}>
             {createNews.isPending ? 'Adding...' : 'Add Article'}
