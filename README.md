@@ -18,11 +18,11 @@
     <img src="https://github.com/user-attachments/assets/c21aee66-4b3a-4eba-834c-849e5dd29b62" alt="Homepage" >
     <p>Music player interface:</p>
     <img src="https://github.com/user-attachments/assets/f276fa8e-3506-451e-981a-180e13b2da5d" alt="Music Player" >
-    <p>Track list:</p>
-    <img src="https://github.com/user-attachments/assets/928afc52-0c56-4f2c-9111-13bf2a03cc94" alt="Track List" >
     <p>News</p>
+    <img src="https://github.com/user-attachments/assets/928afc52-0c56-4f2c-9111-13bf2a03cc94" alt="Track List" >
+    <p>Videos</p>
     <img src="https://github.com/user-attachments/assets/784c2c58-3dc5-45b9-8427-0c76b3cfb20e" alt="Download Section">
-    <p>Video Page</p>
+    <p>Footer</p>
     <img src="https://github.com/user-attachments/assets/a8564f09-4f25-48d3-842a-be1421e80545" alt="Mobile View">    
     <h2>🛠️ Technologies Used</h2>
     <ul>
