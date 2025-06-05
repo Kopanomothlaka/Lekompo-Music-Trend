@@ -73,25 +73,23 @@ const Tracks = () => {
     if (!song.download_url) return;
     
     try {
-      // Fetch the file content
       const response = await fetch(song.download_url);
       if (!response.ok) {
         throw new Error(`Failed to download: ${response.statusText}`);
       }
       
-      // Get the file content as blob
       const blob = await response.blob();
       
-      // Generate a safe filename
       const safeTitle = song.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
       const safeArtist = song.artist.replace(/[^a-z0-9]/gi, '_').toLowerCase();
       const filename = `${safeTitle}_by_${safeArtist}.mp3`;
       
-      // Save the file using file-saver
       saveAs(blob, filename);
+
+      // ✅ Refresh the page after download
+      window.location.reload();
     } catch (error) {
       console.error('Download error:', error);
-      // Fallback to opening in new tab if download fails
       window.open(song.download_url, '_blank');
     }
   };
@@ -143,7 +141,6 @@ const Tracks = () => {
                         className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
                       />
                       
-                      {/* Play overlay */}
                       <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center">
                         <Button 
                           onClick={() => handlePlayPause(song)}
@@ -157,7 +154,6 @@ const Tracks = () => {
                         </Button>
                       </div>
                       
-                      {/* Play count */}
                       <div className="absolute bottom-4 left-4 bg-black/70 backdrop-blur-sm px-3 py-1 rounded-full">
                         <span className="text-white text-sm font-medium">
                           {song.plays?.toLocaleString() || '0'} plays
