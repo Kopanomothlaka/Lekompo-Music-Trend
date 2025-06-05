@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,6 +7,7 @@ import MusicPlayer from '@/components/MusicPlayer';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Play, Pause, Download, Calendar, User } from 'lucide-react';
+import { saveAs } from 'file-saver'; // Import file-saver
 
 interface Song {
   id: string;
@@ -67,6 +67,33 @@ const Tracks = () => {
     const prevIndex = currentIndex === 0 ? songs.length - 1 : currentIndex - 1;
     setCurrentSong(songs[prevIndex]);
     setIsPlaying(true);
+  };
+
+  const handleDownload = async (song: Song) => {
+    if (!song.download_url) return;
+    
+    try {
+      // Fetch the file content
+      const response = await fetch(song.download_url);
+      if (!response.ok) {
+        throw new Error(`Failed to download: ${response.statusText}`);
+      }
+      
+      // Get the file content as blob
+      const blob = await response.blob();
+      
+      // Generate a safe filename
+      const safeTitle = song.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      const safeArtist = song.artist.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      const filename = `${safeTitle}_by_${safeArtist}.mp3`;
+      
+      // Save the file using file-saver
+      saveAs(blob, filename);
+    } catch (error) {
+      console.error('Download error:', error);
+      // Fallback to opening in new tab if download fails
+      window.open(song.download_url, '_blank');
+    }
   };
 
   if (isLoading) {
@@ -190,7 +217,7 @@ const Tracks = () => {
                         {song.download_url && (
                           <Button 
                             variant="outline"
-                            onClick={() => window.open(song.download_url, '_blank')}
+                            onClick={() => handleDownload(song)}
                             className="border-green-500 text-green-400 hover:bg-green-500/10 rounded-full"
                           >
                             <Download className="h-4 w-4" />
