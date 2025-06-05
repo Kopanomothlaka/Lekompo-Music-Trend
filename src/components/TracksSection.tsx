@@ -1,11 +1,10 @@
-
 import { Download, Calendar, User, Play, Pause, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useState } from "react";
+import { saveAs } from 'file-saver'; // Added file-saver library
 
 interface Song {
   id: string;
@@ -27,7 +26,7 @@ interface TracksSectionProps {
 }
 
 const TracksSection = ({ onSongSelect, onPlayPause, currentSong, isPlaying }: TracksSectionProps) => {
-          const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const { data: tracks = [], isLoading } = useQuery({
     queryKey: ['featured-songs'],
@@ -56,8 +55,29 @@ const TracksSection = ({ onSongSelect, onPlayPause, currentSong, isPlaying }: Tr
     }
   };
 
-  const handleDownload = (track: Song) => {
-    if (track.download_url) {
+  const handleDownload = async (track: Song) => {
+    if (!track.download_url) return;
+    
+    try {
+      // Fetch the file content
+      const response = await fetch(track.download_url);
+      if (!response.ok) {
+        throw new Error(`Failed to download: ${response.statusText}`);
+      }
+      
+      // Get the file content as blob
+      const blob = await response.blob();
+      
+      // Generate a safe filename
+      const safeTitle = track.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      const safeArtist = track.artist.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      const filename = `${safeTitle}_by_${safeArtist}.mp3`;
+      
+      // Save the file using file-saver
+      saveAs(blob, filename);
+    } catch (error) {
+      console.error('Download error:', error);
+      // Fallback to opening in new tab if download fails
       window.open(track.download_url, '_blank');
     }
   };
