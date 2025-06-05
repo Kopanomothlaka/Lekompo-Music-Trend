@@ -1,73 +1,45 @@
-# Welcome to your Lovable project
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Lekompo Music Website - README</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; padding: 20px;">
+    <h1>Lekompo Music Website 🎵</h1>
+    <p><strong>Lekompo Music</strong> is a sleek, user-friendly web application where users can listen to and download music with ease.</p>
+    <h2>🚀 Features</h2>
+    <ul>
+        <li>🎧 Stream music directly from the browser</li>
+        <li>⬇️ Download tracks for offline listening</li>
+        <li>📱 Responsive and mobile-friendly interface</li>
+        <li>📷 Visual player interface with engaging layout</li>
+    </ul>
+    <h2>🖼️ Screenshots</h2>
+    <p>Homepage view:</p>
+    <img src="https://github.com/user-attachments/assets/c21aee66-4b3a-4eba-834c-849e5dd29b62" alt="Homepage" width="600">
+    <p>Music player interface:</p>
+    <img src="https://github.com/user-attachments/assets/f276fa8e-3506-451e-981a-180e13b2da5d" alt="Music Player" width="600">
+    <p>Track list:</p>
+    <img src="https://github.com/user-attachments/assets/928afc52-0c56-4f2c-9111-13bf2a03cc94" alt="Track List" width="600">
+    <p>Download music section:</p>
+    <img src="https://github.com/user-attachments/assets/784c2c58-3dc5-45b9-8427-0c76b3cfb20e" alt="Download Section" width="600">
+    <p>Mobile view:</p>
+    <img src="https://github.com/user-attachments/assets/a8564f09-4f25-48d3-842a-be1421e80545" alt="Mobile View" width="300">
+    <h2>📂 Project Setup</h2>
+    <ol>
+        <li>Clone the repository: <code>git clone https://github.com/your-username/lekompo-music.git</code></li>
+        <li>Navigate to the project folder</li>
+        <li>Open <code>index.html</code> in your browser</li>
+    </ol>
+    <h2>🛠️ Technologies Used</h2>
+    <ul>
+        <li>HTML, CSS, JavaScript, TypeScript</li>
+        <li>Supabase (Backend, Authentication, Database)</li>
+        <li>Audio API for music streaming</li>
+        <li>Responsive design for multi-device support</li>
+    </ul>
+    <h2>📬 Contact</h2>
+    <p>Developed by <strong><a href="https://kaytechcodecatalyst.co.za/">KayTech</a></strong> — feel free to reach out for collaboration or feedback.</p>
 
-## Project info
-
-**URL**: https://lovable.dev/projects/9eabae5b-8acd-4887-a2a4-ed1d049b882a
-
-## How can I edit this code?
-
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/9eabae5b-8acd-4887-a2a4-ed1d049b882a) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/9eabae5b-8acd-4887-a2a4-ed1d049b882a) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+</body>
+</html>
