@@ -1,11 +1,31 @@
 
-import { Download, Calendar, User, Play, Heart } from "lucide-react";
+import { Download, Calendar, User, Play, Pause, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 
-const TracksSection = () => {
+interface Song {
+  id: string;
+  title: string;
+  artist: string;
+  image_url?: string;
+  download_url?: string;
+  release_date?: string;
+  duration?: string;
+  plays?: number;
+  genre?: string[];
+}
+
+interface TracksSectionProps {
+  onSongSelect?: (song: Song) => void;
+  onPlayPause?: (song?: Song) => void;
+  currentSong?: Song | null;
+  isPlaying?: boolean;
+}
+
+const TracksSection = ({ onSongSelect, onPlayPause, currentSong, isPlaying }: TracksSectionProps) => {
   const { data: tracks = [], isLoading } = useQuery({
     queryKey: ['featured-songs'],
     queryFn: async () => {
@@ -23,6 +43,21 @@ const TracksSection = () => {
       return data || [];
     }
   });
+
+  const handlePlayPause = (track: Song) => {
+    if (onPlayPause) {
+      onPlayPause(track);
+    }
+    if (onSongSelect && (!currentSong || currentSong.id !== track.id)) {
+      onSongSelect(track);
+    }
+  };
+
+  const handleDownload = (track: Song) => {
+    if (track.download_url) {
+      window.open(track.download_url, '_blank');
+    }
+  };
 
   if (isLoading) {
     return (
@@ -75,8 +110,15 @@ const TracksSection = () => {
                     
                     {/* Play overlay */}
                     <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center">
-                      <Button className="spotify-green rounded-full w-16 h-16 p-0 shadow-2xl">
-                        <Play className="h-6 w-6 text-black ml-1" fill="currentColor" />
+                      <Button 
+                        onClick={() => handlePlayPause(track)}
+                        className="spotify-green rounded-full w-16 h-16 p-0 shadow-2xl"
+                      >
+                        {currentSong?.id === track.id && isPlaying ? (
+                          <Pause className="h-6 w-6 text-black" fill="currentColor" />
+                        ) : (
+                          <Play className="h-6 w-6 text-black ml-1" fill="currentColor" />
+                        )}
                       </Button>
                     </div>
                     
@@ -89,6 +131,13 @@ const TracksSection = () => {
                     <div className="absolute bottom-4 left-4 bg-black/70 backdrop-blur-sm px-3 py-1 rounded-full">
                       <span className="text-white text-sm font-medium">{track.plays?.toLocaleString() || '0'} plays</span>
                     </div>
+
+                    {/* Now playing indicator */}
+                    {currentSong?.id === track.id && (
+                      <div className="absolute top-4 left-4 bg-green-500 px-2 py-1 rounded-full">
+                        <span className="text-black text-xs font-bold">NOW PLAYING</span>
+                      </div>
+                    )}
                   </div>
                   
                   <div className="p-6 bg-gray-900/80">
@@ -122,17 +171,34 @@ const TracksSection = () => {
                       </div>
                     )}
                     
-                    <Button 
-                      className="w-full spotify-green hover:scale-105 text-black font-semibold rounded-full transition-all duration-300"
-                      onClick={() => {
-                        if (track.download_url) {
-                          window.open(track.download_url, '_blank');
-                        }
-                      }}
-                    >
-                      <Download className="mr-2 h-4 w-4" />
-                      Download Free
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button 
+                        onClick={() => handlePlayPause(track)}
+                        className="flex-1 spotify-green hover:scale-105 text-black font-semibold rounded-full transition-all duration-300"
+                      >
+                        {currentSong?.id === track.id && isPlaying ? (
+                          <>
+                            <Pause className="mr-2 h-4 w-4" />
+                            Pause
+                          </>
+                        ) : (
+                          <>
+                            <Play className="mr-2 h-4 w-4" />
+                            Play
+                          </>
+                        )}
+                      </Button>
+                      
+                      {track.download_url && (
+                        <Button 
+                          variant="outline"
+                          onClick={() => handleDownload(track)}
+                          className="border-green-500 text-green-400 hover:bg-green-500/10 rounded-full"
+                        >
+                          <Download className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
