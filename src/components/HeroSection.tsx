@@ -1,8 +1,10 @@
 
 import { Play, Download, Music } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from 'react-router-dom';
 
 const HeroSection = () => {
+    const navigate = useNavigate();
   return (
     <section id="home" className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex items-center justify-center relative overflow-hidden">
       {/* Animated background elements - more Spotify-like */}
@@ -57,11 +59,13 @@ const HeroSection = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-            <Button className="spotify-green hover:scale-105 text-black font-semibold px-12 py-6 text-lg rounded-full transition-all duration-300 hover:shadow-2xl animate-pulse-glow">
+            <Button className="spotify-green hover:scale-105 text-black font-semibold px-12 py-6 text-lg rounded-full transition-all duration-300 hover:shadow-2xl animate-pulse-glow"
+                    onClick={() => navigate('/tracks')}>
               <Play className="mr-3 h-6 w-6" fill="currentColor" />
               Play Now
             </Button>
-            <Button variant="outline" className="border-green-500 text-green-400 hover:bg-green-500/10 hover:text-green-300 px-12 py-6 text-lg rounded-full transition-all duration-300 hover:scale-105 hover:shadow-xl">
+            <Button variant="outline" className="border-green-500 text-green-400 hover:bg-green-500/10 hover:text-green-300 px-12 py-6 text-lg rounded-full transition-all duration-300 hover:scale-105 hover:shadow-xl"
+                    onClick={() => navigate('/tracks')}>
               <Download className="mr-3 h-6 w-6" />
               Free Downloads
             </Button>

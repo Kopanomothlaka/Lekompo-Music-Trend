@@ -1,6 +1,7 @@
 
 import { Download, Calendar, User, Play, Pause, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,6 +27,8 @@ interface TracksSectionProps {
 }
 
 const TracksSection = ({ onSongSelect, onPlayPause, currentSong, isPlaying }: TracksSectionProps) => {
+          const navigate = useNavigate();
+
   const { data: tracks = [], isLoading } = useQuery({
     queryKey: ['featured-songs'],
     queryFn: async () => {
@@ -205,9 +208,9 @@ const TracksSection = ({ onSongSelect, onPlayPause, currentSong, isPlaying }: Tr
             ))}
           </div>
         )}
-        
         <div className="text-center mt-16">
-          <Button variant="outline" className="border-green-500 text-green-400 hover:bg-green-500/10 px-8 py-3 rounded-full font-semibold">
+          <Button variant="outline" className="border-green-500 text-green-400 hover:bg-green-500/10 px-8 py-3 rounded-full font-semibold"
+           onClick={() => navigate('/tracks')}>
             View All Tracks
           </Button>
         </div>

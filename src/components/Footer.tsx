@@ -62,7 +62,7 @@ const Footer = () => {
         <div className="border-t border-gray-800/50 mt-12 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="text-gray-400 text-center md:text-left mb-4 md:mb-0">
-              <p>&copy; 2024 Lovable Lekompo. All rights reserved.</p>
+              <p>&copy; 2025 Lekompo Music  . All rights reserved.</p>
               <p className="text-sm mt-1">Made with ❤️ for the Lekompo community.</p>
             </div>
             

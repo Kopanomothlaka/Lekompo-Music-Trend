@@ -14,7 +14,7 @@ const Header = () => {
             <div className="p-2 spotify-green rounded-xl animate-pulse-glow">
               <Music className="h-6 w-6 text-black" />
             </div>
-            <h1 className="text-2xl font-black gradient-text">Lovable Lekompo</h1>
+            <h1 className="text-2xl font-black gradient-text">Lekompo</h1>
           </Link>
           
           {/* Desktop Navigation */}
