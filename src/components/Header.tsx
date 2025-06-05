@@ -23,8 +23,8 @@ const Header = () => {
               Home
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-green-400 transition-all duration-300 group-hover:w-full"></span>
             </Link>
-            <Link to="/downloads" className="text-gray-300 hover:text-green-400 transition-all duration-300 hover:scale-105 font-medium relative group">
-              Downloads
+            <Link to="/tracks" className="text-gray-300 hover:text-green-400 transition-all duration-300 hover:scale-105 font-medium relative group">
+              Tracks
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-green-400 transition-all duration-300 group-hover:w-full"></span>
             </Link>
             <Link to="/news" className="text-gray-300 hover:text-green-400 transition-all duration-300 hover:scale-105 font-medium relative group">
@@ -60,11 +60,11 @@ const Header = () => {
                 Home
               </Link>
               <Link 
-                to="/downloads" 
+                to="/tracks" 
                 className="text-gray-300 hover:text-green-400 transition-colors font-medium"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Downloads
+                Tracks
               </Link>
               <Link 
                 to="/news" 
