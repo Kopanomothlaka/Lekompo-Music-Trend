@@ -23,13 +23,7 @@
     <p>Download music section:</p>
     <img src="https://github.com/user-attachments/assets/784c2c58-3dc5-45b9-8427-0c76b3cfb20e" alt="Download Section">
     <p>Mobile view:</p>
-    <img src="https://github.com/user-attachments/assets/a8564f09-4f25-48d3-842a-be1421e80545" alt="Mobile View">
-    <h2>📂 Project Setup</h2>
-    <ol>
-        <li>Clone the repository: <code>git clone https://github.com/your-username/lekompo-music.git</code></li>
-        <li>Navigate to the project folder</li>
-        <li>Open <code>index.html</code> in your browser</li>
-    </ol>
+    <img src="https://github.com/user-attachments/assets/a8564f09-4f25-48d3-842a-be1421e80545" alt="Mobile View">    
     <h2>🛠️ Technologies Used</h2>
     <ul>
         <li>HTML, CSS, JavaScript, TypeScript</li>
