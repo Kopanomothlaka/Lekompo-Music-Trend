@@ -100,13 +100,7 @@ const AdminLogin = () => {
               </Button>
             </form>
 
-            <div className="mt-6 p-4 bg-gray-800 rounded-lg">
-              <h3 className="text-sm font-medium text-gray-300 mb-2">Default Admin Credentials:</h3>
-              <div className="text-sm text-gray-400 space-y-1">
-                <p><strong>Username:</strong> admin</p>
-                <p><strong>Password:</strong> admin123</p>
-              </div>
-            </div>
+            
           </CardContent>
         </Card>
       </div>
