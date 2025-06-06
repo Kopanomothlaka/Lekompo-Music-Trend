@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Plus, Music, Video, FileText } from 'lucide-react';
@@ -17,11 +16,13 @@ import SongForm from '@/components/admin/SongForm';
 import VideoForm from '@/components/admin/VideoForm';
 import NewsForm from '@/components/admin/NewsForm';
 import ContentCard from '@/components/admin/ContentCard';
+import { useAdminAuth } from '@/contexts/AdminAuthContext';
 
 const Admin = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('songs');
   const [editingItem, setEditingItem] = useState<any>(null);
+  const { admin, logout } = useAdminAuth();
 
   // Fetch songs
   const { data: songs = [] } = useQuery({
@@ -110,8 +111,17 @@ const Admin = () => {
       <div className="pt-20">
         <div className="container mx-auto px-4 sm:px-6 py-8">
           <div className="mb-8">
-            <h1 className="text-3xl sm:text-4xl font-bold mb-4 gradient-text">Admin Dashboard</h1>
-            <p className="text-gray-400">Manage your songs, videos, and news content</p>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+              <div>
+                <h1 className="text-3xl sm:text-4xl font-bold gradient-text">Admin Dashboard</h1>
+                <p className="text-gray-400">Manage your songs, videos, and news content</p>
+              </div>
+              {admin && (
+                <div className="flex items-center gap-4 text-sm text-gray-400">
+                  <span>Logged in as: <span className="text-green-400 font-medium">{admin.username}</span></span>
+                </div>
+              )}
+            </div>
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
