@@ -3,8 +3,17 @@ import { Youtube, Play, Eye, Clock, ThumbsUp } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const VideoSection = () => {
+  const [playingVideo, setPlayingVideo] = useState<any>(null);
+
   const { data: videos = [], isLoading } = useQuery({
     queryKey: ['videos'],
     queryFn: async () => {
@@ -22,6 +31,24 @@ const VideoSection = () => {
       return data || [];
     }
   });
+
+  // Function to extract YouTube video ID from various URL formats
+  const getYoutubeVideoId = (url: string) => {
+    if (!url) return null;
+    
+    // Match YouTube URL patterns
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    
+    return (match && match[2].length === 11) 
+      ? match[2] 
+      : null;
+  };
+
+  // Function to handle video playback
+  const handlePlayVideo = (video: any) => {
+    setPlayingVideo(video);
+  };
 
   if (isLoading) {
     return (
@@ -70,7 +97,10 @@ const VideoSection = () => {
             {/* Featured Video */}
             {featuredVideo && (
               <div className="mb-16">
-                <Card className="spotify-card border-0 overflow-hidden cursor-pointer group animate-slide-up">
+                <Card 
+                  className="spotify-card border-0 overflow-hidden cursor-pointer group animate-slide-up"
+                  onClick={() => handlePlayVideo(featuredVideo)}
+                >
                   <CardContent className="p-0">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
                       <div className="relative overflow-hidden h-64 lg:h-auto">
@@ -151,6 +181,7 @@ const VideoSection = () => {
                     key={video.id}
                     className="spotify-card border-0 overflow-hidden cursor-pointer group animate-slide-up"
                     style={{animationDelay: `${index * 0.1 + 0.2}s`}}
+                    onClick={() => handlePlayVideo(video)}
                   >
                     <CardContent className="p-0">
                       <div className="relative overflow-hidden">
@@ -203,6 +234,33 @@ const VideoSection = () => {
                 ))}
               </div>
             )}
+            
+            {/* Video Player Dialog */}
+            <Dialog open={!!playingVideo} onOpenChange={(open) => !open && setPlayingVideo(null)}>
+              <DialogContent className="bg-black border-gray-800 max-w-3xl w-[95vw] p-1">
+                <DialogHeader className="mb-2">
+                  <DialogTitle className="text-white">{playingVideo?.title}</DialogTitle>
+                </DialogHeader>
+                {playingVideo && getYoutubeVideoId(playingVideo.video_url) ? (
+                  <div className="aspect-video w-full">
+                    <iframe 
+                      width="100%" 
+                      height="100%"
+                      src={`https://www.youtube.com/embed/${getYoutubeVideoId(playingVideo.video_url)}`}
+                      title={playingVideo.title}
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      className="rounded-sm"
+                    ></iframe>
+                  </div>
+                ) : (
+                  <div className="aspect-video w-full bg-gray-800 flex items-center justify-center text-gray-400">
+                    No valid YouTube URL provided
+                  </div>
+                )}
+              </DialogContent>
+            </Dialog>
           </>
         )}
         

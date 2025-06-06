@@ -4,8 +4,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
+import NewsDetail from "./NewsDetail";
 
 const NewsSection = () => {
+  const [selectedArticle, setSelectedArticle] = useState<any>(null);
+
   const { data: newsItems = [], isLoading } = useQuery({
     queryKey: ['news-articles'],
     queryFn: async () => {
@@ -23,6 +27,10 @@ const NewsSection = () => {
       return data || [];
     }
   });
+
+  const handleReadArticle = (article: any) => {
+    setSelectedArticle(article);
+  };
 
   if (isLoading) {
     return (
@@ -65,7 +73,10 @@ const NewsSection = () => {
             {/* Featured Article */}
             {featuredNews && (
               <div className="mb-16">
-                <Card className="spotify-card border-0 overflow-hidden cursor-pointer group animate-slide-up">
+                <Card 
+                  className="spotify-card border-0 overflow-hidden cursor-pointer group animate-slide-up"
+                  onClick={() => handleReadArticle(featuredNews)}
+                >
                   <CardContent className="p-0">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
                       <div className="relative overflow-hidden h-64 lg:h-auto">
@@ -132,6 +143,7 @@ const NewsSection = () => {
                     key={item.id}
                     className="spotify-card border-0 overflow-hidden cursor-pointer group animate-slide-up"
                     style={{animationDelay: `${index * 0.1 + 0.2}s`}}
+                    onClick={() => handleReadArticle(item)}
                   >
                     <CardContent className="p-0">
                       <div className="relative overflow-hidden">
@@ -184,6 +196,13 @@ const NewsSection = () => {
                 ))}
               </div>
             )}
+
+            {/* News Article Detail Dialog */}
+            <NewsDetail 
+              article={selectedArticle} 
+              isOpen={!!selectedArticle} 
+              onClose={() => setSelectedArticle(null)} 
+            />
           </>
         )}
         
