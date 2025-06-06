@@ -1,4 +1,3 @@
-
 import { Download, Calendar, User, Play, Pause, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from 'react-router-dom';
@@ -49,7 +48,11 @@ const TracksSection = ({ onSongSelect, onPlayPause, currentSong, isPlaying }: Tr
 
   const updatePlayCount = useMutation({
     mutationFn: async (songId: string) => {
-      const { error } = await supabase.rpc('increment_song_plays', { song_id: songId });
+      // For now, directly update the plays count until the SQL function is created
+      const { error } = await supabase
+        .from('songs')
+        .update({ plays: (currentSong?.plays || 0) + 1 })
+        .eq('id', songId);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -155,7 +158,7 @@ const TracksSection = ({ onSongSelect, onPlayPause, currentSong, isPlaying }: Tr
                       <img 
                         src={track.image_url || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"} 
                         alt={track.title}
-                        className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-110"
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                       />
                     </div>
                     

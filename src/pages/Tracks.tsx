@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -45,7 +44,12 @@ const Tracks = () => {
 
   const updatePlayCount = useMutation({
     mutationFn: async (songId: string) => {
-      const { error } = await supabase.rpc('increment_song_plays', { song_id: songId });
+      // For now, directly update the plays count until the SQL function is created
+      const song = songs.find(s => s.id === songId);
+      const { error } = await supabase
+        .from('songs')
+        .update({ plays: (song?.plays || 0) + 1 })
+        .eq('id', songId);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -170,7 +174,7 @@ const Tracks = () => {
                         <img 
                           src={song.image_url || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"} 
                           alt={song.title}
-                          className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-110"
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                         />
                       </div>
                       

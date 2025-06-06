@@ -34,8 +34,24 @@ const VideoSection = () => {
 
   const updateVideoStats = useMutation({
     mutationFn: async ({ videoId, type }: { videoId: string, type: 'view' | 'like' }) => {
-      const { error } = await supabase.rpc(`increment_video_${type}s`, { video_id: videoId });
-      if (error) throw error;
+      // For now, directly update until the SQL functions are created
+      if (type === 'view') {
+        const video = videos.find(v => v.id === videoId);
+        const currentViews = parseInt(video?.views || '0') || 0;
+        const { error } = await supabase
+          .from('videos')
+          .update({ views: (currentViews + 1).toString() })
+          .eq('id', videoId);
+        if (error) throw error;
+      } else if (type === 'like') {
+        const video = videos.find(v => v.id === videoId);
+        const currentLikes = parseInt(video?.likes || '0') || 0;
+        const { error } = await supabase
+          .from('videos')
+          .update({ likes: (currentLikes + 1).toString() })
+          .eq('id', videoId);
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['videos'] });
@@ -69,7 +85,6 @@ const VideoSection = () => {
 
   // Function to visit YouTube channel
   const visitYouTubeChannel = () => {
-    // Replace with the actual YouTube channel URL
     const channelUrl = "https://www.youtube.com/@LovableLekompo";
     window.open(channelUrl, '_blank');
   };
@@ -132,7 +147,7 @@ const VideoSection = () => {
                           <img 
                             src={featuredVideo.thumbnail_url || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&h=340&fit=crop"} 
                             alt={featuredVideo.title}
-                            className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-110"
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                           />
                         </div>
                         
@@ -218,7 +233,7 @@ const VideoSection = () => {
                           <img 
                             src={video.thumbnail_url || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&h=340&fit=crop"} 
                             alt={video.title}
-                            className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-110"
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                           />
                         </div>
                         
