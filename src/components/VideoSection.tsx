@@ -305,7 +305,7 @@ const VideoSection = () => {
           >
             <Youtube className="mr-2 h-5 w-5" />
             Visit Our Channel
-          </Button>
+          </button>
         </div>
       </div>
     </section>
