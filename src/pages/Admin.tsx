@@ -21,6 +21,7 @@ import ContentCard from '@/components/admin/ContentCard';
 const Admin = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('songs');
+  const [editingItem, setEditingItem] = useState<any>(null);
 
   // Fetch songs
   const { data: songs = [] } = useQuery({
@@ -52,14 +53,55 @@ const Admin = () => {
     }
   });
 
-  const handleEdit = (id: string) => {
-    console.log('Edit item:', id);
-    // TODO: Implement edit functionality
+  const handleEdit = (id: string, type: string) => {
+    let item;
+    if (type === 'songs') {
+      item = songs.find(s => s.id === id);
+    } else if (type === 'videos') {
+      item = videos.find(v => v.id === id);
+    } else if (type === 'news') {
+      item = news.find(n => n.id === id);
+    }
+    
+    if (item) {
+      setEditingItem({ ...item, type });
+      setIsDialogOpen(true);
+    }
   };
 
-  const handleDelete = (id: string) => {
-    console.log('Delete item:', id);
-    // TODO: Implement delete functionality
+  const handleCloseDialog = () => {
+    setIsDialogOpen(false);
+    setEditingItem(null);
+  };
+
+  const getDialogTitle = () => {
+    if (editingItem) {
+      return `Edit ${editingItem.type.slice(0, -1).charAt(0).toUpperCase() + editingItem.type.slice(1, -1)}`;
+    }
+    if (activeTab === 'songs') return 'Add New Song';
+    if (activeTab === 'videos') return 'Add New Video';
+    if (activeTab === 'news') return 'Add News Article';
+    return 'Add New';
+  };
+
+  const renderForm = () => {
+    if (editingItem) {
+      if (editingItem.type === 'songs') {
+        return <SongForm onClose={handleCloseDialog} editData={editingItem} />;
+      } else if (editingItem.type === 'videos') {
+        return <VideoForm onClose={handleCloseDialog} editData={editingItem} />;
+      } else if (editingItem.type === 'news') {
+        return <NewsForm onClose={handleCloseDialog} editData={editingItem} />;
+      }
+    }
+    
+    if (activeTab === 'songs') {
+      return <SongForm onClose={handleCloseDialog} />;
+    } else if (activeTab === 'videos') {
+      return <VideoForm onClose={handleCloseDialog} />;
+    } else if (activeTab === 'news') {
+      return <NewsForm onClose={handleCloseDialog} />;
+    }
   };
 
   return (
@@ -91,7 +133,7 @@ const Admin = () => {
             <TabsContent value="songs" className="space-y-6">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <h2 className="text-xl sm:text-2xl font-semibold">Songs Management</h2>
-                <Dialog open={isDialogOpen && activeTab === 'songs'} onOpenChange={setIsDialogOpen}>
+                <Dialog open={isDialogOpen && (activeTab === 'songs' || editingItem?.type === 'songs')} onOpenChange={setIsDialogOpen}>
                   <DialogTrigger asChild>
                     <Button className="bg-green-500 hover:bg-green-600 w-full sm:w-auto">
                       <Plus className="h-4 w-4 mr-2" />
@@ -100,9 +142,9 @@ const Admin = () => {
                   </DialogTrigger>
                   <DialogContent className="bg-gray-900 text-white max-w-4xl max-h-[90vh] w-[95vw] sm:w-full">
                     <DialogHeader>
-                      <DialogTitle>Add New Song</DialogTitle>
+                      <DialogTitle>{getDialogTitle()}</DialogTitle>
                     </DialogHeader>
-                    <SongForm onClose={() => setIsDialogOpen(false)} />
+                    {renderForm()}
                   </DialogContent>
                 </Dialog>
               </div>
@@ -116,8 +158,8 @@ const Admin = () => {
                     subtitle={song.artist}
                     meta={`${song.plays || 0} plays`}
                     imageUrl={song.image_url}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
+                    type="song"
+                    onEdit={(id) => handleEdit(id, 'songs')}
                   />
                 ))}
               </div>
@@ -126,7 +168,7 @@ const Admin = () => {
             <TabsContent value="videos" className="space-y-6">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <h2 className="text-xl sm:text-2xl font-semibold">Videos Management</h2>
-                <Dialog open={isDialogOpen && activeTab === 'videos'} onOpenChange={setIsDialogOpen}>
+                <Dialog open={isDialogOpen && (activeTab === 'videos' || editingItem?.type === 'videos')} onOpenChange={setIsDialogOpen}>
                   <DialogTrigger asChild>
                     <Button className="bg-green-500 hover:bg-green-600 w-full sm:w-auto">
                       <Plus className="h-4 w-4 mr-2" />
@@ -135,9 +177,9 @@ const Admin = () => {
                   </DialogTrigger>
                   <DialogContent className="bg-gray-900 text-white w-[95vw] sm:w-full">
                     <DialogHeader>
-                      <DialogTitle>Add New Video</DialogTitle>
+                      <DialogTitle>{getDialogTitle()}</DialogTitle>
                     </DialogHeader>
-                    <VideoForm onClose={() => setIsDialogOpen(false)} />
+                    {renderForm()}
                   </DialogContent>
                 </Dialog>
               </div>
@@ -151,8 +193,8 @@ const Admin = () => {
                     subtitle={video.channel || 'No channel'}
                     meta={`${video.views || '0'} views`}
                     imageUrl={video.thumbnail_url}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
+                    type="video"
+                    onEdit={(id) => handleEdit(id, 'videos')}
                   />
                 ))}
               </div>
@@ -161,7 +203,7 @@ const Admin = () => {
             <TabsContent value="news" className="space-y-6">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <h2 className="text-xl sm:text-2xl font-semibold">News Management</h2>
-                <Dialog open={isDialogOpen && activeTab === 'news'} onOpenChange={setIsDialogOpen}>
+                <Dialog open={isDialogOpen && (activeTab === 'news' || editingItem?.type === 'news')} onOpenChange={setIsDialogOpen}>
                   <DialogTrigger asChild>
                     <Button className="bg-green-500 hover:bg-green-600 w-full sm:w-auto">
                       <Plus className="h-4 w-4 mr-2" />
@@ -170,9 +212,9 @@ const Admin = () => {
                   </DialogTrigger>
                   <DialogContent className="bg-gray-900 text-white max-w-2xl w-[95vw] sm:w-full">
                     <DialogHeader>
-                      <DialogTitle>Add News Article</DialogTitle>
+                      <DialogTitle>{getDialogTitle()}</DialogTitle>
                     </DialogHeader>
-                    <NewsForm onClose={() => setIsDialogOpen(false)} />
+                    {renderForm()}
                   </DialogContent>
                 </Dialog>
               </div>
@@ -186,8 +228,8 @@ const Admin = () => {
                     subtitle={article.author || 'Unknown author'}
                     meta={article.category || 'Uncategorized'}
                     imageUrl={article.image_url}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
+                    type="news"
+                    onEdit={(id) => handleEdit(id, 'news')}
                   />
                 ))}
               </div>

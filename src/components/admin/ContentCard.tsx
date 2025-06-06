@@ -3,6 +3,9 @@ import React from 'react';
 import { Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface ContentCardProps {
   id: string;
@@ -10,6 +13,7 @@ interface ContentCardProps {
   subtitle: string;
   meta: string;
   imageUrl?: string;
+  type: 'song' | 'video' | 'news';
   onEdit?: (id: string) => void;
   onDelete?: (id: string) => void;
 }
@@ -20,9 +24,38 @@ const ContentCard: React.FC<ContentCardProps> = ({
   subtitle,
   meta,
   imageUrl,
+  type,
   onEdit,
   onDelete
 }) => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      const tableName = type === 'song' ? 'songs' : type === 'video' ? 'videos' : 'news';
+      const { error } = await supabase.from(tableName).delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`admin-${type}s`] });
+      toast({ title: `${type.charAt(0).toUpperCase() + type.slice(1)} deleted successfully!` });
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: `Error deleting ${type}`, 
+        description: error.message, 
+        variant: "destructive" 
+      });
+    }
+  });
+
+  const handleDelete = () => {
+    if (window.confirm(`Are you sure you want to delete this ${type}?`)) {
+      deleteMutation.mutate();
+    }
+  };
+
   return (
     <Card className="bg-gray-800 border-gray-700">
       <CardContent className="p-4">
@@ -47,16 +80,15 @@ const ContentCard: React.FC<ContentCardProps> = ({
                 <Edit className="h-4 w-4" />
               </Button>
             )}
-            {onDelete && (
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="text-red-400 hover:text-red-300"
-                onClick={() => onDelete(id)}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            )}
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="text-red-400 hover:text-red-300"
+              onClick={handleDelete}
+              disabled={deleteMutation.isPending}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       </CardContent>

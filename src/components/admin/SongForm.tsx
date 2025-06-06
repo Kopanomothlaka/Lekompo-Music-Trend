@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,9 +10,10 @@ import FileUpload from '@/components/FileUpload';
 
 interface SongFormProps {
   onClose: () => void;
+  editData?: any;
 }
 
-const SongForm: React.FC<SongFormProps> = ({ onClose }) => {
+const SongForm: React.FC<SongFormProps> = ({ onClose, editData }) => {
   const [formData, setFormData] = useState({
     title: '',
     artist: '',
@@ -26,24 +27,54 @@ const SongForm: React.FC<SongFormProps> = ({ onClose }) => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
+  // Populate form data when editing
+  useEffect(() => {
+    if (editData) {
+      setFormData({
+        title: editData.title || '',
+        artist: editData.artist || '',
+        release_date: editData.release_date || '',
+        genre: editData.genre ? editData.genre.join(', ') : '',
+        image_url: editData.image_url || '',
+        duration: editData.duration || '',
+        download_url: editData.download_url || ''
+      });
+    }
+  }, [editData]);
+
   // Check if required fields are filled
   const areRequiredFieldsFilled = formData.title.trim() !== '' && formData.artist.trim() !== '';
 
-  const createSong = useMutation({
+  const saveSong = useMutation({
     mutationFn: async (data: any) => {
-      const { error } = await supabase.from('songs').insert([{
+      const songData = {
         ...data,
         genre: data.genre ? data.genre.split(',').map((g: string) => g.trim()) : []
-      }]);
-      if (error) throw error;
+      };
+
+      if (editData) {
+        const { error } = await supabase
+          .from('songs')
+          .update(songData)
+          .eq('id', editData.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('songs').insert([songData]);
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-songs'] });
-      toast({ title: "Song added successfully!" });
+      queryClient.invalidateQueries({ queryKey: ['featured-songs'] });
+      toast({ title: `Song ${editData ? 'updated' : 'added'} successfully!` });
       onClose();
     },
     onError: (error) => {
-      toast({ title: "Error adding song", description: error.message, variant: "destructive" });
+      toast({ 
+        title: `Error ${editData ? 'updating' : 'adding'} song`, 
+        description: error.message, 
+        variant: "destructive" 
+      });
     }
   });
 
@@ -57,7 +88,7 @@ const SongForm: React.FC<SongFormProps> = ({ onClose }) => {
       });
       return;
     }
-    createSong.mutate(formData);
+    saveSong.mutate(formData);
   };
 
   return (
@@ -120,7 +151,7 @@ const SongForm: React.FC<SongFormProps> = ({ onClose }) => {
           />
         </div>
 
-        {!areRequiredFieldsFilled && (
+        {!areRequiredFieldsFilled && !editData && (
           <div className="bg-orange-900/20 border border-orange-500/30 rounded-md p-3">
             <p className="text-orange-400 text-sm">
               Please fill in the title and artist fields above before uploading files.
@@ -129,7 +160,7 @@ const SongForm: React.FC<SongFormProps> = ({ onClose }) => {
         )}
         
         <div className="space-y-4">
-          <div className={areRequiredFieldsFilled ? '' : 'opacity-50 pointer-events-none'}>
+          <div className={areRequiredFieldsFilled || editData ? '' : 'opacity-50 pointer-events-none'}>
             <FileUpload
               bucket="images"
               accept="image/*"
@@ -139,7 +170,7 @@ const SongForm: React.FC<SongFormProps> = ({ onClose }) => {
             />
           </div>
           
-          <div className={areRequiredFieldsFilled ? '' : 'opacity-50 pointer-events-none'}>
+          <div className={areRequiredFieldsFilled || editData ? '' : 'opacity-50 pointer-events-none'}>
             <FileUpload
               bucket="songs"
               accept="audio/*"
@@ -151,8 +182,8 @@ const SongForm: React.FC<SongFormProps> = ({ onClose }) => {
         </div>
         
         <div className="flex gap-2 pt-4 border-t border-gray-700">
-          <Button type="submit" disabled={createSong.isPending || !areRequiredFieldsFilled}>
-            {createSong.isPending ? 'Adding...' : 'Add Song'}
+          <Button type="submit" disabled={saveSong.isPending || (!areRequiredFieldsFilled && !editData)}>
+            {saveSong.isPending ? (editData ? 'Updating...' : 'Adding...') : (editData ? 'Update Song' : 'Add Song')}
           </Button>
           <Button type="button" variant="outline" onClick={onClose}>
             Cancel

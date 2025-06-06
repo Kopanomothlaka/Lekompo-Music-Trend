@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,9 +11,10 @@ import FileUpload from '@/components/FileUpload';
 
 interface NewsFormProps {
   onClose: () => void;
+  editData?: any;
 }
 
-const NewsForm: React.FC<NewsFormProps> = ({ onClose }) => {
+const NewsForm: React.FC<NewsFormProps> = ({ onClose, editData }) => {
   const [formData, setFormData] = useState({
     title: '',
     excerpt: '',
@@ -27,24 +28,51 @@ const NewsForm: React.FC<NewsFormProps> = ({ onClose }) => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const createNews = useMutation({
+  // Populate form data when editing
+  useEffect(() => {
+    if (editData) {
+      setFormData({
+        title: editData.title || '',
+        excerpt: editData.excerpt || '',
+        content: editData.content || '',
+        author: editData.author || '',
+        category: editData.category || '',
+        image_url: editData.image_url || '',
+        read_time: editData.read_time || ''
+      });
+    }
+  }, [editData]);
+
+  const saveNews = useMutation({
     mutationFn: async (data: any) => {
-      const { error } = await supabase.from('news').insert([data]);
-      if (error) throw error;
+      if (editData) {
+        const { error } = await supabase
+          .from('news')
+          .update(data)
+          .eq('id', editData.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('news').insert([data]);
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-news'] });
-      toast({ title: "News article added successfully!" });
+      toast({ title: `News article ${editData ? 'updated' : 'added'} successfully!` });
       onClose();
     },
     onError: (error) => {
-      toast({ title: "Error adding news", description: error.message, variant: "destructive" });
+      toast({ 
+        title: `Error ${editData ? 'updating' : 'adding'} news`, 
+        description: error.message, 
+        variant: "destructive" 
+      });
     }
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    createNews.mutate(formData);
+    saveNews.mutate(formData);
   };
 
   return (
@@ -111,8 +139,8 @@ const NewsForm: React.FC<NewsFormProps> = ({ onClose }) => {
       />
       
       <div className="flex gap-2">
-        <Button type="submit" disabled={createNews.isPending}>
-          {createNews.isPending ? 'Adding...' : 'Add Article'}
+        <Button type="submit" disabled={saveNews.isPending}>
+          {saveNews.isPending ? (editData ? 'Updating...' : 'Adding...') : (editData ? 'Update Article' : 'Add Article')}
         </Button>
         <Button type="button" variant="outline" onClick={onClose}>
           Cancel

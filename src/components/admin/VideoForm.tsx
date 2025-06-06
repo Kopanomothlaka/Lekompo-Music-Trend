@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,9 +10,10 @@ import FileUpload from '@/components/FileUpload';
 
 interface VideoFormProps {
   onClose: () => void;
+  editData?: any;
 }
 
-const VideoForm: React.FC<VideoFormProps> = ({ onClose }) => {
+const VideoForm: React.FC<VideoFormProps> = ({ onClose, editData }) => {
   const [formData, setFormData] = useState({
     title: '',
     channel: '',
@@ -25,24 +26,50 @@ const VideoForm: React.FC<VideoFormProps> = ({ onClose }) => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const createVideo = useMutation({
+  // Populate form data when editing
+  useEffect(() => {
+    if (editData) {
+      setFormData({
+        title: editData.title || '',
+        channel: editData.channel || '',
+        video_url: editData.video_url || '',
+        thumbnail_url: editData.thumbnail_url || '',
+        duration: editData.duration || '',
+        upload_date: editData.upload_date || ''
+      });
+    }
+  }, [editData]);
+
+  const saveVideo = useMutation({
     mutationFn: async (data: any) => {
-      const { error } = await supabase.from('videos').insert([data]);
-      if (error) throw error;
+      if (editData) {
+        const { error } = await supabase
+          .from('videos')
+          .update(data)
+          .eq('id', editData.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('videos').insert([data]);
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-videos'] });
-      toast({ title: "Video added successfully!" });
+      toast({ title: `Video ${editData ? 'updated' : 'added'} successfully!` });
       onClose();
     },
     onError: (error) => {
-      toast({ title: "Error adding video", description: error.message, variant: "destructive" });
+      toast({ 
+        title: `Error ${editData ? 'updating' : 'adding'} video`, 
+        description: error.message, 
+        variant: "destructive" 
+      });
     }
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    createVideo.mutate(formData);
+    saveVideo.mutate(formData);
   };
 
   return (
@@ -101,8 +128,8 @@ const VideoForm: React.FC<VideoFormProps> = ({ onClose }) => {
       />
       
       <div className="flex gap-2">
-        <Button type="submit" disabled={createVideo.isPending}>
-          {createVideo.isPending ? 'Adding...' : 'Add Video'}
+        <Button type="submit" disabled={saveVideo.isPending}>
+          {saveVideo.isPending ? (editData ? 'Updating...' : 'Adding...') : (editData ? 'Update Video' : 'Add Video')}
         </Button>
         <Button type="button" variant="outline" onClick={onClose}>
           Cancel
