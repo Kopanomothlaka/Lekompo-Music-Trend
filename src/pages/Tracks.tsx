@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -7,7 +8,6 @@ import MusicPlayer from '@/components/MusicPlayer';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Play, Pause, Download, Calendar, User } from 'lucide-react';
-import { saveAs } from 'file-saver'; // Import file-saver
 
 interface Song {
   id: string;
@@ -24,6 +24,7 @@ interface Song {
 const Tracks = () => {
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: songs = [], isLoading } = useQuery({
     queryKey: ['all-songs'],
@@ -42,10 +43,22 @@ const Tracks = () => {
     }
   });
 
+  const updatePlayCount = useMutation({
+    mutationFn: async (songId: string) => {
+      const { error } = await supabase.rpc('increment_song_plays', { song_id: songId });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['all-songs'] });
+      queryClient.invalidateQueries({ queryKey: ['featured-songs'] });
+    }
+  });
+
   const handlePlayPause = (song?: Song) => {
     if (song && song.id !== currentSong?.id) {
       setCurrentSong(song);
       setIsPlaying(true);
+      updatePlayCount.mutate(song.id);
     } else {
       setIsPlaying(!isPlaying);
     }
@@ -73,25 +86,41 @@ const Tracks = () => {
     if (!song.download_url) return;
     
     try {
-      // Fetch the file content
-      const response = await fetch(song.download_url);
-      if (!response.ok) {
-        throw new Error(`Failed to download: ${response.statusText}`);
+      // For mobile devices, use a simpler download approach
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      
+      if (isMobile) {
+        // Direct download link for mobile - faster and more reliable
+        const link = document.createElement('a');
+        link.href = song.download_url;
+        link.download = `${song.title.replace(/[^a-z0-9]/gi, '_')}_by_${song.artist.replace(/[^a-z0-9]/gi, '_')}.mp3`;
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        // Desktop approach with blob for better file naming
+        const response = await fetch(song.download_url);
+        if (!response.ok) {
+          throw new Error(`Failed to download: ${response.statusText}`);
+        }
+        
+        const blob = await response.blob();
+        const safeTitle = song.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        const safeArtist = song.artist.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        const filename = `${safeTitle}_by_${safeArtist}.mp3`;
+        
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
       }
-      
-      // Get the file content as blob
-      const blob = await response.blob();
-      
-      // Generate a safe filename
-      const safeTitle = song.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-      const safeArtist = song.artist.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-      const filename = `${safeTitle}_by_${safeArtist}.mp3`;
-      
-      // Save the file using file-saver
-      saveAs(blob, filename);
     } catch (error) {
       console.error('Download error:', error);
-      // Fallback to opening in new tab if download fails
       window.open(song.download_url, '_blank');
     }
   };
@@ -137,11 +166,13 @@ const Tracks = () => {
                 >
                   <CardContent className="p-0">
                     <div className="relative overflow-hidden">
-                      <img 
-                        src={song.image_url || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"} 
-                        alt={song.title}
-                        className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
-                      />
+                      <div className="w-full h-64 overflow-hidden">
+                        <img 
+                          src={song.image_url || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"} 
+                          alt={song.title}
+                          className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-110"
+                        />
+                      </div>
                       
                       {/* Play overlay */}
                       <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center">

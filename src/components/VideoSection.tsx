@@ -1,7 +1,6 @@
-
 import { Youtube, Play, Eye, Clock, ThumbsUp } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import {
@@ -13,6 +12,7 @@ import {
 
 const VideoSection = () => {
   const [playingVideo, setPlayingVideo] = useState<any>(null);
+  const queryClient = useQueryClient();
 
   const { data: videos = [], isLoading } = useQuery({
     queryKey: ['videos'],
@@ -32,6 +32,16 @@ const VideoSection = () => {
     }
   });
 
+  const updateVideoStats = useMutation({
+    mutationFn: async ({ videoId, type }: { videoId: string, type: 'view' | 'like' }) => {
+      const { error } = await supabase.rpc(`increment_video_${type}s`, { video_id: videoId });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['videos'] });
+    }
+  });
+
   // Function to extract YouTube video ID from various URL formats
   const getYoutubeVideoId = (url: string) => {
     if (!url) return null;
@@ -48,6 +58,20 @@ const VideoSection = () => {
   // Function to handle video playback
   const handlePlayVideo = (video: any) => {
     setPlayingVideo(video);
+    updateVideoStats.mutate({ videoId: video.id, type: 'view' });
+  };
+
+  // Function to handle like action
+  const handleLikeVideo = (video: any, event: React.MouseEvent) => {
+    event.stopPropagation();
+    updateVideoStats.mutate({ videoId: video.id, type: 'like' });
+  };
+
+  // Function to visit YouTube channel
+  const visitYouTubeChannel = () => {
+    // Replace with the actual YouTube channel URL
+    const channelUrl = "https://www.youtube.com/@LovableLekompo";
+    window.open(channelUrl, '_blank');
   };
 
   if (isLoading) {
@@ -104,11 +128,13 @@ const VideoSection = () => {
                   <CardContent className="p-0">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
                       <div className="relative overflow-hidden h-64 lg:h-auto">
-                        <img 
-                          src={featuredVideo.thumbnail_url || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&h=340&fit=crop"} 
-                          alt={featuredVideo.title}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                        />
+                        <div className="w-full h-full overflow-hidden">
+                          <img 
+                            src={featuredVideo.thumbnail_url || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&h=340&fit=crop"} 
+                            alt={featuredVideo.title}
+                            className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-110"
+                          />
+                        </div>
                         
                         {/* Play button overlay */}
                         <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -148,7 +174,10 @@ const VideoSection = () => {
                           </div>
                           <div className="text-center">
                             <div className="flex items-center justify-center mb-1">
-                              <ThumbsUp className="h-4 w-4 text-green-400 mr-1" />
+                              <ThumbsUp 
+                                className="h-4 w-4 text-green-400 mr-1 cursor-pointer hover:text-green-300" 
+                                onClick={(e) => handleLikeVideo(featuredVideo, e)}
+                              />
                               <span className="text-lg font-bold text-white">{featuredVideo.likes || '0'}</span>
                             </div>
                             <span className="text-xs text-gray-400">Likes</span>
@@ -185,11 +214,13 @@ const VideoSection = () => {
                   >
                     <CardContent className="p-0">
                       <div className="relative overflow-hidden">
-                        <img 
-                          src={video.thumbnail_url || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&h=340&fit=crop"} 
-                          alt={video.title}
-                          className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110"
-                        />
+                        <div className="w-full h-48 overflow-hidden">
+                          <img 
+                            src={video.thumbnail_url || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&h=340&fit=crop"} 
+                            alt={video.title}
+                            className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-110"
+                          />
+                        </div>
                         
                         {/* Play button overlay */}
                         <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -220,7 +251,10 @@ const VideoSection = () => {
                             <span>{video.views || '0'} views</span>
                           </div>
                           <div className="flex items-center">
-                            <ThumbsUp className="h-3 w-3 mr-1" />
+                            <ThumbsUp 
+                              className="h-3 w-3 mr-1 cursor-pointer hover:text-green-400" 
+                              onClick={(e) => handleLikeVideo(video, e)}
+                            />
                             <span>{video.likes || '0'}</span>
                           </div>
                         </div>
@@ -246,7 +280,7 @@ const VideoSection = () => {
                     <iframe 
                       width="100%" 
                       height="100%"
-                      src={`https://www.youtube.com/embed/${getYoutubeVideoId(playingVideo.video_url)}`}
+                      src={`https://www.youtube.com/embed/${getYoutubeVideoId(playingVideo.video_url)}?autoplay=1`}
                       title={playingVideo.title}
                       frameBorder="0"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -265,10 +299,13 @@ const VideoSection = () => {
         )}
         
         <div className="text-center mt-16">
-          <button className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-full transition-all duration-300 hover:scale-105 flex items-center mx-auto font-semibold">
+          <button 
+            onClick={visitYouTubeChannel}
+            className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-full transition-all duration-300 hover:scale-105 flex items-center mx-auto font-semibold"
+          >
             <Youtube className="mr-2 h-5 w-5" />
             Visit Our Channel
-          </button>
+          </Button>
         </div>
       </div>
     </section>

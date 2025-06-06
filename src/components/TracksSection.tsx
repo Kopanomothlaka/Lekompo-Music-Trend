@@ -1,10 +1,10 @@
+
 import { Download, Calendar, User, Play, Pause, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from "@/components/ui/card";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { saveAs } from 'file-saver'; // Added file-saver library
 
 interface Song {
   id: string;
@@ -27,6 +27,7 @@ interface TracksSectionProps {
 
 const TracksSection = ({ onSongSelect, onPlayPause, currentSong, isPlaying }: TracksSectionProps) => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const { data: tracks = [], isLoading } = useQuery({
     queryKey: ['featured-songs'],
@@ -46,12 +47,24 @@ const TracksSection = ({ onSongSelect, onPlayPause, currentSong, isPlaying }: Tr
     }
   });
 
+  const updatePlayCount = useMutation({
+    mutationFn: async (songId: string) => {
+      const { error } = await supabase.rpc('increment_song_plays', { song_id: songId });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['featured-songs'] });
+      queryClient.invalidateQueries({ queryKey: ['all-songs'] });
+    }
+  });
+
   const handlePlayPause = (track: Song) => {
     if (onPlayPause) {
       onPlayPause(track);
     }
     if (onSongSelect && (!currentSong || currentSong.id !== track.id)) {
       onSongSelect(track);
+      updatePlayCount.mutate(track.id);
     }
   };
 
@@ -59,25 +72,38 @@ const TracksSection = ({ onSongSelect, onPlayPause, currentSong, isPlaying }: Tr
     if (!track.download_url) return;
     
     try {
-      // Fetch the file content
-      const response = await fetch(track.download_url);
-      if (!response.ok) {
-        throw new Error(`Failed to download: ${response.statusText}`);
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      
+      if (isMobile) {
+        const link = document.createElement('a');
+        link.href = track.download_url;
+        link.download = `${track.title.replace(/[^a-z0-9]/gi, '_')}_by_${track.artist.replace(/[^a-z0-9]/gi, '_')}.mp3`;
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        const response = await fetch(track.download_url);
+        if (!response.ok) {
+          throw new Error(`Failed to download: ${response.statusText}`);
+        }
+        
+        const blob = await response.blob();
+        const safeTitle = track.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        const safeArtist = track.artist.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        const filename = `${safeTitle}_by_${safeArtist}.mp3`;
+        
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
       }
-      
-      // Get the file content as blob
-      const blob = await response.blob();
-      
-      // Generate a safe filename
-      const safeTitle = track.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-      const safeArtist = track.artist.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-      const filename = `${safeTitle}_by_${safeArtist}.mp3`;
-      
-      // Save the file using file-saver
-      saveAs(blob, filename);
     } catch (error) {
       console.error('Download error:', error);
-      // Fallback to opening in new tab if download fails
       window.open(track.download_url, '_blank');
     }
   };
@@ -125,11 +151,13 @@ const TracksSection = ({ onSongSelect, onPlayPause, currentSong, isPlaying }: Tr
               >
                 <CardContent className="p-0">
                   <div className="relative overflow-hidden">
-                    <img 
-                      src={track.image_url || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"} 
-                      alt={track.title}
-                      className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
+                    <div className="w-full h-64 overflow-hidden">
+                      <img 
+                        src={track.image_url || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"} 
+                        alt={track.title}
+                        className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-110"
+                      />
+                    </div>
                     
                     {/* Play overlay */}
                     <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center">
