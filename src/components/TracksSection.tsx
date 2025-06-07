@@ -75,39 +75,41 @@ const TracksSection = ({ onSongSelect, onPlayPause, currentSong, isPlaying }: Tr
     if (!track.download_url) return;
     
     try {
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const safeTitle = track.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      const safeArtist = track.artist.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      const filename = `${safeTitle}_by_${safeArtist}.mp3`;
       
-      if (isMobile) {
-        const link = document.createElement('a');
-        link.href = track.download_url;
-        link.download = `${track.title.replace(/[^a-z0-9]/gi, '_')}_by_${track.artist.replace(/[^a-z0-9]/gi, '_')}.mp3`;
-        link.target = '_blank';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      } else {
+      // Try to fetch and download as blob first
+      try {
         const response = await fetch(track.download_url);
-        if (!response.ok) {
-          throw new Error(`Failed to download: ${response.statusText}`);
+        if (response.ok) {
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = filename;
+          link.style.display = 'none';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+          return;
         }
-        
-        const blob = await response.blob();
-        const safeTitle = track.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-        const safeArtist = track.artist.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-        const filename = `${safeTitle}_by_${safeArtist}.mp3`;
-        
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = filename;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
+      } catch (fetchError) {
+        console.log('Fetch failed, trying direct download:', fetchError);
       }
+      
+      // Fallback to direct download link
+      const link = document.createElement('a');
+      link.href = track.download_url;
+      link.download = filename;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
     } catch (error) {
       console.error('Download error:', error);
-      window.open(track.download_url, '_blank');
     }
   };
 

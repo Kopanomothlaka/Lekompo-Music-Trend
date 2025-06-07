@@ -85,8 +85,7 @@ const Tracks = () => {
     setIsPlaying(true);
   };
 
-  // UPDATED DOWNLOAD HANDLER - NO NEW WINDOW
-  const handleDownload = (song: Song) => {
+  const handleDownload = async (song: Song) => {
     if (!song.download_url) return;
     
     try {
@@ -94,6 +93,27 @@ const Tracks = () => {
       const safeArtist = song.artist.replace(/[^a-z0-9]/gi, '_').toLowerCase();
       const filename = `${safeTitle}_by_${safeArtist}.mp3`;
       
+      // Try to fetch and download as blob first
+      try {
+        const response = await fetch(song.download_url);
+        if (response.ok) {
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = filename;
+          link.style.display = 'none';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+          return;
+        }
+      } catch (fetchError) {
+        console.log('Fetch failed, trying direct download:', fetchError);
+      }
+      
+      // Fallback to direct download link
       const link = document.createElement('a');
       link.href = song.download_url;
       link.download = filename;
@@ -101,9 +121,9 @@ const Tracks = () => {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      
     } catch (error) {
       console.error('Download error:', error);
-      // Removed window.open() to prevent new tab
     }
   };
 
