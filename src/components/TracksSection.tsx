@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from "@/components/ui/card";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
+import DownloadProgress from "@/components/DownloadProgress";
 
 interface Song {
   id: string;
@@ -24,9 +26,22 @@ interface TracksSectionProps {
   isPlaying?: boolean;
 }
 
+interface DownloadState {
+  isDownloading: boolean;
+  progress: number;
+  filename: string;
+  status: 'downloading' | 'completed' | 'error' | 'idle';
+}
+
 const TracksSection = ({ onSongSelect, onPlayPause, currentSong, isPlaying }: TracksSectionProps) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [downloadState, setDownloadState] = useState<DownloadState>({
+    isDownloading: false,
+    progress: 0,
+    filename: '',
+    status: 'idle'
+  });
 
   const { data: tracks = [], isLoading } = useQuery({
     queryKey: ['featured-songs'],
@@ -74,42 +89,67 @@ const TracksSection = ({ onSongSelect, onPlayPause, currentSong, isPlaying }: Tr
   const handleDownload = async (track: Song) => {
     if (!track.download_url) return;
     
+    const safeTitle = track.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    const safeArtist = track.artist.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    const filename = `${safeTitle}_by_${safeArtist}.mp3`;
+    
+    setDownloadState({
+      isDownloading: true,
+      progress: 0,
+      filename,
+      status: 'downloading'
+    });
+
     try {
-      const safeTitle = track.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-      const safeArtist = track.artist.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-      const filename = `${safeTitle}_by_${safeArtist}.mp3`;
+      const response = await fetch(track.download_url);
+      if (!response.ok) throw new Error('Download failed');
       
-      // Try to fetch and download as blob first
-      try {
-        const response = await fetch(track.download_url);
-        if (response.ok) {
-          const blob = await response.blob();
-          const url = window.URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = filename;
-          link.style.display = 'none';
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          window.URL.revokeObjectURL(url);
-          return;
+      const contentLength = response.headers.get('Content-Length');
+      const total = contentLength ? parseInt(contentLength, 10) : 0;
+      
+      if (!response.body) throw new Error('No response body');
+      
+      const reader = response.body.getReader();
+      const chunks: Uint8Array[] = [];
+      let loaded = 0;
+      
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        chunks.push(value);
+        loaded += value.length;
+        
+        if (total > 0) {
+          const progress = (loaded / total) * 100;
+          setDownloadState(prev => ({ ...prev, progress }));
         }
-      } catch (fetchError) {
-        console.log('Fetch failed, trying direct download:', fetchError);
       }
       
-      // Fallback to direct download link
+      const blob = new Blob(chunks);
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.href = track.download_url;
+      link.href = url;
       link.download = filename;
       link.style.display = 'none';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      setDownloadState(prev => ({ ...prev, status: 'completed', progress: 100 }));
+      
+      setTimeout(() => {
+        setDownloadState({ isDownloading: false, progress: 0, filename: '', status: 'idle' });
+      }, 3000);
       
     } catch (error) {
       console.error('Download error:', error);
+      setDownloadState(prev => ({ ...prev, status: 'error' }));
+      
+      setTimeout(() => {
+        setDownloadState({ isDownloading: false, progress: 0, filename: '', status: 'idle' });
+      }, 3000);
     }
   };
 
@@ -268,6 +308,13 @@ const TracksSection = ({ onSongSelect, onPlayPause, currentSong, isPlaying }: Tr
           </Button>
         </div>
       </div>
+      
+      <DownloadProgress 
+        isDownloading={downloadState.isDownloading}
+        progress={downloadState.progress}
+        filename={downloadState.filename}
+        status={downloadState.status}
+      />
     </section>
   );
 };

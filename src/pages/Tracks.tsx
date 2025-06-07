@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import MusicPlayer from '@/components/MusicPlayer';
+import DownloadProgress from '@/components/DownloadProgress';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Play, Pause, Download, Calendar, User } from 'lucide-react';
@@ -20,9 +21,22 @@ interface Song {
   genre?: string[];
 }
 
+interface DownloadState {
+  isDownloading: boolean;
+  progress: number;
+  filename: string;
+  status: 'downloading' | 'completed' | 'error' | 'idle';
+}
+
 const Tracks = () => {
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [downloadState, setDownloadState] = useState<DownloadState>({
+    isDownloading: false,
+    progress: 0,
+    filename: '',
+    status: 'idle'
+  });
   const queryClient = useQueryClient();
 
   const { data: songs = [], isLoading } = useQuery({
@@ -88,42 +102,67 @@ const Tracks = () => {
   const handleDownload = async (song: Song) => {
     if (!song.download_url) return;
     
+    const safeTitle = song.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    const safeArtist = song.artist.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    const filename = `${safeTitle}_by_${safeArtist}.mp3`;
+    
+    setDownloadState({
+      isDownloading: true,
+      progress: 0,
+      filename,
+      status: 'downloading'
+    });
+
     try {
-      const safeTitle = song.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-      const safeArtist = song.artist.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-      const filename = `${safeTitle}_by_${safeArtist}.mp3`;
+      const response = await fetch(song.download_url);
+      if (!response.ok) throw new Error('Download failed');
       
-      // Try to fetch and download as blob first
-      try {
-        const response = await fetch(song.download_url);
-        if (response.ok) {
-          const blob = await response.blob();
-          const url = window.URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = filename;
-          link.style.display = 'none';
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          window.URL.revokeObjectURL(url);
-          return;
+      const contentLength = response.headers.get('Content-Length');
+      const total = contentLength ? parseInt(contentLength, 10) : 0;
+      
+      if (!response.body) throw new Error('No response body');
+      
+      const reader = response.body.getReader();
+      const chunks: Uint8Array[] = [];
+      let loaded = 0;
+      
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        chunks.push(value);
+        loaded += value.length;
+        
+        if (total > 0) {
+          const progress = (loaded / total) * 100;
+          setDownloadState(prev => ({ ...prev, progress }));
         }
-      } catch (fetchError) {
-        console.log('Fetch failed, trying direct download:', fetchError);
       }
       
-      // Fallback to direct download link
+      const blob = new Blob(chunks);
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.href = song.download_url;
+      link.href = url;
       link.download = filename;
       link.style.display = 'none';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      setDownloadState(prev => ({ ...prev, status: 'completed', progress: 100 }));
+      
+      setTimeout(() => {
+        setDownloadState({ isDownloading: false, progress: 0, filename: '', status: 'idle' });
+      }, 3000);
       
     } catch (error) {
       console.error('Download error:', error);
+      setDownloadState(prev => ({ ...prev, status: 'error' }));
+      
+      setTimeout(() => {
+        setDownloadState({ isDownloading: false, progress: 0, filename: '', status: 'idle' });
+      }, 3000);
     }
   };
 
@@ -272,6 +311,13 @@ const Tracks = () => {
         onPlayPause={() => handlePlayPause()}
         onNext={handleNext}
         onPrevious={handlePrevious}
+      />
+      
+      <DownloadProgress 
+        isDownloading={downloadState.isDownloading}
+        progress={downloadState.progress}
+        filename={downloadState.filename}
+        status={downloadState.status}
       />
       
       <Footer />
