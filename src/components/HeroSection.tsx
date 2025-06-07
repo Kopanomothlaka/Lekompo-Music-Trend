@@ -55,8 +55,7 @@ const HeroSection = () => {
             Where tradition meets innovation
           </p>
           <p className="text-lg text-gray-400 mb-12 max-w-2xl mx-auto leading-relaxed">
-            Discover the revolutionary sound of Lekompo music. Stream, download, and immerse yourself in authentic rhythms reimagined for the modern world.
-          </p>
+Welcome to LekompoMusic, the ultimate destination for authentic Lekompo sounds straight from the heart of Limpopo, South Africa! Explore a fresh wave of proudly South African music featuring exclusive mixes, artist interviews, music drops, and event updates          </p>
           
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
             <Button className="spotify-green hover:scale-105 text-black font-semibold px-12 py-6 text-lg rounded-full transition-all duration-300 hover:shadow-2xl animate-pulse-glow"
