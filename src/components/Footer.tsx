@@ -1,8 +1,11 @@
 
-import { Music, Youtube, Instagram, Twitter, Facebook } from "lucide-react";
+import { Music, Youtube, Instagram, Twitter, Facebook, Shield } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAdminAuth } from "@/contexts/AdminAuthContext";
 
 const Footer = () => {
+  const { admin } = useAdminAuth();
+
   return (
     <footer className="bg-black border-t border-gray-800/50 py-16">
       <div className="container mx-auto px-6">
@@ -43,6 +46,21 @@ const Footer = () => {
               <li><Link to="/downloads" className="text-gray-400 hover:text-green-400 transition-colors duration-300 hover:translate-x-2 inline-block">Downloads</Link></li>
               <li><Link to="/news" className="text-gray-400 hover:text-green-400 transition-colors duration-300 hover:translate-x-2 inline-block">News</Link></li>
               <li><Link to="/videos" className="text-gray-400 hover:text-green-400 transition-colors duration-300 hover:translate-x-2 inline-block">Videos</Link></li>
+              {admin ? (
+                <li>
+                  <Link to="/admin" className="text-green-400 hover:text-green-300 transition-colors duration-300 hover:translate-x-2 inline-block flex items-center gap-1">
+                    <Shield className="h-4 w-4" />
+                    Admin Dashboard
+                  </Link>
+                </li>
+              ) : (
+                <li>
+                  <Link to="/admin/login" className="text-gray-400 hover:text-green-400 transition-colors duration-300 hover:translate-x-2 inline-block flex items-center gap-1">
+                    <Shield className="h-4 w-4" />
+                    Admin Login
+                  </Link>
+                </li>
+              )}
             </ul>
           </div>
           
