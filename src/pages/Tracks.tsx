@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import Header from '@/components/Header';
@@ -7,7 +7,8 @@ import MusicPlayer from '@/components/MusicPlayer';
 import DownloadProgress from '@/components/DownloadProgress';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Play, Pause, Download, Calendar, User } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Play, Pause, Download, Calendar, User, Search } from 'lucide-react';
 
 interface Song {
   id: string;
@@ -31,6 +32,7 @@ interface DownloadState {
 const Tracks = () => {
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [downloadState, setDownloadState] = useState<DownloadState>({
     isDownloading: false,
     progress: 0,
@@ -55,6 +57,20 @@ const Tracks = () => {
       return data || [];
     }
   });
+
+  // Filter songs based on search query
+  const filteredSongs = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return songs;
+    }
+
+    const query = searchQuery.toLowerCase();
+    return songs.filter(song => 
+      song.title.toLowerCase().includes(query) ||
+      song.artist.toLowerCase().includes(query) ||
+      (song.genre && song.genre.some(g => g.toLowerCase().includes(query)))
+    );
+  }, [songs, searchQuery]);
 
   const updatePlayCount = useMutation({
     mutationFn: async (songId: string) => {
@@ -189,18 +205,34 @@ const Tracks = () => {
         <div className="container mx-auto px-6">
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-bold mb-6 gradient-text">All Tracks</h1>
-            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-8">
               Discover and stream all available tracks from Lovable Lekompo
             </p>
+            
+            {/* Search Field */}
+            <div className="max-w-md mx-auto mb-8">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                <Input
+                  type="text"
+                  placeholder="Search tracks, artists, or genres..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 bg-gray-900/50 border-gray-700 text-white placeholder-gray-400 focus:border-green-500 focus:ring-green-500"
+                />
+              </div>
+            </div>
           </div>
 
-          {songs.length === 0 ? (
+          {filteredSongs.length === 0 ? (
             <div className="text-center">
-              <p className="text-xl text-gray-400">No tracks available yet.</p>
+              <p className="text-xl text-gray-400">
+                {searchQuery ? `No tracks found matching "${searchQuery}"` : 'No tracks available yet.'}
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {songs.map((song) => (
+              {filteredSongs.map((song) => (
                 <Card 
                   key={song.id} 
                   className="spotify-card group cursor-pointer border-0 overflow-hidden bg-gray-900/50"
