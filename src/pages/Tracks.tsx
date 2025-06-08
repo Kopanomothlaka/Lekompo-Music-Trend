@@ -8,7 +8,7 @@ import DownloadProgress from '@/components/DownloadProgress';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Play, Pause, Download, Calendar, User, Search } from 'lucide-react';
+import { Play, Pause, Download, Calendar, User, Search, X } from 'lucide-react';
 
 interface Song {
   id: string;
@@ -205,30 +205,53 @@ const Tracks = () => {
         <div className="container mx-auto px-6">
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-bold mb-6 gradient-text">All Tracks</h1>
-            <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-8">
+            <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-12">
               Discover and stream all available tracks from Lovable Lekompo
             </p>
             
-            {/* Search Field */}
-            <div className="max-w-md mx-auto mb-8">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                <Input
-                  type="text"
-                  placeholder="Search tracks, artists, or genres..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 bg-gray-900/50 border-gray-700 text-white placeholder-gray-400 focus:border-green-500 focus:ring-green-500"
-                />
+            {/* Modern Search Field */}
+            <div className="max-w-lg mx-auto mb-12">
+              <div className="relative group">
+                <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 to-green-400/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+                <div className="relative bg-gray-900/80 backdrop-blur-xl border border-gray-700/50 rounded-2xl p-1 group-hover:border-green-500/30 transition-all duration-300">
+                  <div className="flex items-center">
+                    <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-green-500/10 group-hover:bg-green-500/20 transition-all duration-300">
+                      <Search className="h-5 w-5 text-green-400" />
+                    </div>
+                    <Input
+                      type="text"
+                      placeholder="Search tracks, artists, or genres..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="flex-1 bg-transparent border-0 text-white placeholder-gray-400 text-lg px-4 py-3 focus:ring-0 focus:outline-none h-12"
+                    />
+                    {searchQuery && (
+                      <button
+                        onClick={() => setSearchQuery('')}
+                        className="flex items-center justify-center w-12 h-12 rounded-xl hover:bg-gray-700/50 transition-all duration-200 group/clear"
+                      >
+                        <X className="h-4 w-4 text-gray-400 group-hover/clear:text-white transition-colors" />
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
+              
+              {/* Search Results Count */}
+              {searchQuery && (
+                <div className="mt-4 text-sm text-gray-400 animate-fade-in">
+                  {filteredSongs.length === 0 
+                    ? `No tracks found for "${searchQuery}"`
+                    : `Found ${filteredSongs.length} track${filteredSongs.length === 1 ? '' : 's'} matching "${searchQuery}"`
+                  }
+                </div>
+              )}
             </div>
           </div>
 
-          {filteredSongs.length === 0 ? (
+          {filteredSongs.length === 0 && !searchQuery ? (
             <div className="text-center">
-              <p className="text-xl text-gray-400">
-                {searchQuery ? `No tracks found matching "${searchQuery}"` : 'No tracks available yet.'}
-              </p>
+              <p className="text-xl text-gray-400">No tracks available yet.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
