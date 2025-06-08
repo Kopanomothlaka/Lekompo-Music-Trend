@@ -1,6 +1,7 @@
+
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Plus, Music, Video, FileText } from 'lucide-react';
+import { Plus, Music, Video, FileText, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -10,6 +11,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { supabase } from '@/integrations/supabase/client';
 import Header from '@/components/Header';
 import SongForm from '@/components/admin/SongForm';
@@ -49,6 +58,19 @@ const Admin = () => {
     queryKey: ['admin-news'],
     queryFn: async () => {
       const { data, error } = await supabase.from('news').select('*').order('created_at', { ascending: false });
+      if (error) throw error;
+      return data;
+    }
+  });
+
+  // Fetch email subscriptions
+  const { data: emailSubscriptions = [] } = useQuery({
+    queryKey: ['admin-email-subscriptions'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('email_subscriptions')
+        .select('*')
+        .order('subscribed_at', { ascending: false });
       if (error) throw error;
       return data;
     }
@@ -114,7 +136,7 @@ const Admin = () => {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
               <div>
                 <h1 className="text-3xl sm:text-4xl font-bold gradient-text">Admin Dashboard</h1>
-                <p className="text-gray-400">Manage your songs, videos, and news content</p>
+                <p className="text-gray-400">Manage your songs, videos, news content, and email subscriptions</p>
               </div>
               {admin && (
                 <div className="flex items-center gap-4 text-sm text-gray-400">
@@ -125,7 +147,7 @@ const Admin = () => {
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 bg-gray-800">
+            <TabsList className="grid w-full grid-cols-4 bg-gray-800">
               <TabsTrigger value="songs" className="flex items-center gap-2 text-xs sm:text-sm">
                 <Music className="h-4 w-4" />
                 <span className="hidden sm:inline">Songs</span> ({songs.length})
@@ -137,6 +159,10 @@ const Admin = () => {
               <TabsTrigger value="news" className="flex items-center gap-2 text-xs sm:text-sm">
                 <FileText className="h-4 w-4" />
                 <span className="hidden sm:inline">News</span> ({news.length})
+              </TabsTrigger>
+              <TabsTrigger value="emails" className="flex items-center gap-2 text-xs sm:text-sm">
+                <Mail className="h-4 w-4" />
+                <span className="hidden sm:inline">Emails</span> ({emailSubscriptions.length})
               </TabsTrigger>
             </TabsList>
 
@@ -242,6 +268,61 @@ const Admin = () => {
                     onEdit={(id) => handleEdit(id, 'news')}
                   />
                 ))}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="emails" className="space-y-6">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <h2 className="text-xl sm:text-2xl font-semibold">Email Subscriptions</h2>
+                <div className="text-sm text-gray-400">
+                  Total subscribers: <span className="text-green-400 font-medium">{emailSubscriptions.filter(sub => sub.is_active).length}</span>
+                </div>
+              </div>
+              
+              <div className="bg-gray-900/50 rounded-lg overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-gray-700">
+                      <TableHead className="text-gray-300">Email</TableHead>
+                      <TableHead className="text-gray-300">Subscribed At</TableHead>
+                      <TableHead className="text-gray-300">Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {emailSubscriptions.map((subscription) => (
+                      <TableRow key={subscription.id} className="border-gray-700 hover:bg-gray-800/50">
+                        <TableCell className="text-white font-medium">
+                          {subscription.email}
+                        </TableCell>
+                        <TableCell className="text-gray-400">
+                          {new Date(subscription.subscribed_at).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </TableCell>
+                        <TableCell>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            subscription.is_active 
+                              ? 'bg-green-500/20 text-green-400' 
+                              : 'bg-red-500/20 text-red-400'
+                          }`}>
+                            {subscription.is_active ? 'Active' : 'Inactive'}
+                          </span>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {emailSubscriptions.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={3} className="text-center text-gray-400 py-8">
+                          No email subscriptions yet
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
               </div>
             </TabsContent>
           </Tabs>
