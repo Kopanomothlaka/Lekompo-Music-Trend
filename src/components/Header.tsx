@@ -1,4 +1,3 @@
-
 import { Music, Menu, X, Shield, LogOut } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -46,7 +45,7 @@ const Header = () => {
             </Link>
             
             {/* Admin Section */}
-            {admin ? (
+            {admin && (
               <div className="flex items-center space-x-4">
                 <Link to="/admin" className="text-green-400 hover:text-green-300 transition-all duration-300 hover:scale-105 font-medium relative group flex items-center gap-1">
                   <Shield className="h-4 w-4" />
@@ -63,12 +62,6 @@ const Header = () => {
                   Logout
                 </Button>
               </div>
-            ) : (
-              <Link to="/admin/login" className="text-gray-300 hover:text-green-400 transition-all duration-300 hover:scale-105 font-medium relative group flex items-center gap-1">
-                <Shield className="h-4 w-4" />
-                Admin
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-green-400 transition-all duration-300 group-hover:w-full"></span>
-              </Link>
             )}
           </div>
 
@@ -117,7 +110,7 @@ const Header = () => {
               </Link>
               
               {/* Mobile Admin Section */}
-              {admin ? (
+              {admin && (
                 <>
                   <Link 
                     to="/admin" 
@@ -138,15 +131,6 @@ const Header = () => {
                     Admin Logout
                   </button>
                 </>
-              ) : (
-                <Link 
-                  to="/admin/login" 
-                  className="text-gray-300 hover:text-green-400 transition-colors font-medium flex items-center gap-1"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <Shield className="h-4 w-4" />
-                  Admin Login
-                </Link>
               )}
             </div>
           </div>
