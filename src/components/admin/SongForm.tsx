@@ -170,15 +170,15 @@ const SongForm: React.FC<SongFormProps> = ({ onClose, editData }) => {
             />
           </div>
           
-          <div className={areRequiredFieldsFilled || editData ? '' : 'opacity-50 pointer-events-none'}>
-            <FileUpload
-              bucket="songs"
-              accept="audio/*"
-              label="Audio File"
-              currentFile={formData.download_url}
-              onUpload={(url) => setFormData({ ...formData, download_url: url })}
-            />
-          </div>
+         <div className={areRequiredFieldsFilled || editData ? '' : 'opacity-50 pointer-events-none'}>
+  <FileUpload
+    bucket="songs"
+    accept="audio/*,audio/mp3,audio/mpeg,audio/wav,audio/aac,audio/ogg"
+    label="Audio File"
+    currentFile={formData.download_url}
+    onUpload={(url) => setFormData({ ...formData, download_url: url })}
+  />
+</div>
         </div>
         
         <div className="flex gap-2 pt-4 border-t border-gray-700">
