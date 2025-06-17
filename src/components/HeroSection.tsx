@@ -49,7 +49,7 @@ const HeroSection = () => {
           </div>
           
           <h1 className="text-7xl md:text-9xl font-black mb-6 gradient-text tracking-tight">
-            LEKOMPO
+            LEKOMPO MUSIC
           </h1>
           <p className="text-2xl md:text-3xl text-gray-300 mb-4 font-light max-w-3xl mx-auto">
             Where tradition meets innovation
