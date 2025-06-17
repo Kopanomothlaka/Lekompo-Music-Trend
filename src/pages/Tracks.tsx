@@ -1,14 +1,12 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import MusicPlayer from '@/components/MusicPlayer';
-import DownloadProgress from '@/components/DownloadProgress';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Play, Pause, Download, Calendar, User, Search, X } from 'lucide-react';
+import { Play, Pause, Download, Calendar, User } from 'lucide-react';
 
 interface Song {
   id: string;
@@ -22,23 +20,9 @@ interface Song {
   genre?: string[];
 }
 
-interface DownloadState {
-  isDownloading: boolean;
-  progress: number;
-  filename: string;
-  status: 'downloading' | 'completed' | 'error' | 'idle';
-}
-
 const Tracks = () => {
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [downloadState, setDownloadState] = useState<DownloadState>({
-    isDownloading: false,
-    progress: 0,
-    filename: '',
-    status: 'idle'
-  });
   const queryClient = useQueryClient();
 
   const { data: songs = [], isLoading } = useQuery({
@@ -58,22 +42,9 @@ const Tracks = () => {
     }
   });
 
-  // Filter songs based on search query
-  const filteredSongs = useMemo(() => {
-    if (!searchQuery.trim()) {
-      return songs;
-    }
-
-    const query = searchQuery.toLowerCase();
-    return songs.filter(song => 
-      song.title.toLowerCase().includes(query) ||
-      song.artist.toLowerCase().includes(query) ||
-      (song.genre && song.genre.some(g => g.toLowerCase().includes(query)))
-    );
-  }, [songs, searchQuery]);
-
   const updatePlayCount = useMutation({
     mutationFn: async (songId: string) => {
+      // For now, directly update the plays count until the SQL function is created
       const song = songs.find(s => s.id === songId);
       const { error } = await supabase
         .from('songs')
@@ -118,67 +89,43 @@ const Tracks = () => {
   const handleDownload = async (song: Song) => {
     if (!song.download_url) return;
     
-    const safeTitle = song.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-    const safeArtist = song.artist.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-    const filename = `${safeTitle}_by_${safeArtist}.mp3`;
-    
-    setDownloadState({
-      isDownloading: true,
-      progress: 0,
-      filename,
-      status: 'downloading'
-    });
-
     try {
-      const response = await fetch(song.download_url);
-      if (!response.ok) throw new Error('Download failed');
+      // For mobile devices, use a simpler download approach
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
       
-      const contentLength = response.headers.get('Content-Length');
-      const total = contentLength ? parseInt(contentLength, 10) : 0;
-      
-      if (!response.body) throw new Error('No response body');
-      
-      const reader = response.body.getReader();
-      const chunks: Uint8Array[] = [];
-      let loaded = 0;
-      
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        
-        chunks.push(value);
-        loaded += value.length;
-        
-        if (total > 0) {
-          const progress = (loaded / total) * 100;
-          setDownloadState(prev => ({ ...prev, progress }));
+      if (isMobile) {
+        // Direct download link for mobile - faster and more reliable
+        const link = document.createElement('a');
+        link.href = song.download_url;
+        link.download = `${song.title.replace(/[^a-z0-9]/gi, '_')}_by_${song.artist.replace(/[^a-z0-9]/gi, '_')}.mp3`;
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        // Desktop approach with blob for better file naming
+        const response = await fetch(song.download_url);
+        if (!response.ok) {
+          throw new Error(`Failed to download: ${response.statusText}`);
         }
+        
+        const blob = await response.blob();
+        const safeTitle = song.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        const safeArtist = song.artist.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        const filename = `${safeTitle}_by_${safeArtist}.mp3`;
+        
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
       }
-      
-      const blob = new Blob(chunks);
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = filename;
-      link.style.display = 'none';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-      
-      setDownloadState(prev => ({ ...prev, status: 'completed', progress: 100 }));
-      
-      setTimeout(() => {
-        setDownloadState({ isDownloading: false, progress: 0, filename: '', status: 'idle' });
-      }, 3000);
-      
     } catch (error) {
       console.error('Download error:', error);
-      setDownloadState(prev => ({ ...prev, status: 'error' }));
-      
-      setTimeout(() => {
-        setDownloadState({ isDownloading: false, progress: 0, filename: '', status: 'idle' });
-      }, 3000);
+      window.open(song.download_url, '_blank');
     }
   };
 
@@ -205,57 +152,18 @@ const Tracks = () => {
         <div className="container mx-auto px-6">
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-bold mb-6 gradient-text">All Tracks</h1>
-            <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-12">
+            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
               Discover and stream all available tracks from Lovable Lekompo
             </p>
-            
-            {/* Modern Search Field */}
-            <div className="max-w-lg mx-auto mb-12">
-              <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 to-green-400/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
-                <div className="relative bg-gray-900/80 backdrop-blur-xl border border-gray-700/50 rounded-2xl p-1 group-hover:border-green-500/30 transition-all duration-300">
-                  <div className="flex items-center">
-                    <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-green-500/10 group-hover:bg-green-500/20 transition-all duration-300">
-                      <Search className="h-5 w-5 text-green-400" />
-                    </div>
-                    <Input
-                      type="text"
-                      placeholder="Search tracks, artists, or genres..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="flex-1 bg-transparent border-0 text-white placeholder-gray-400 text-lg px-4 py-3 focus:ring-0 focus:outline-none h-12"
-                    />
-                    {searchQuery && (
-                      <button
-                        onClick={() => setSearchQuery('')}
-                        className="flex items-center justify-center w-12 h-12 rounded-xl hover:bg-gray-700/50 transition-all duration-200 group/clear"
-                      >
-                        <X className="h-4 w-4 text-gray-400 group-hover/clear:text-white transition-colors" />
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-              
-              {/* Search Results Count */}
-              {searchQuery && (
-                <div className="mt-4 text-sm text-gray-400 animate-fade-in">
-                  {filteredSongs.length === 0 
-                    ? `No tracks found for "${searchQuery}"`
-                    : `Found ${filteredSongs.length} track${filteredSongs.length === 1 ? '' : 's'} matching "${searchQuery}"`
-                  }
-                </div>
-              )}
-            </div>
           </div>
 
-          {filteredSongs.length === 0 && !searchQuery ? (
+          {songs.length === 0 ? (
             <div className="text-center">
               <p className="text-xl text-gray-400">No tracks available yet.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredSongs.map((song) => (
+              {songs.map((song) => (
                 <Card 
                   key={song.id} 
                   className="spotify-card group cursor-pointer border-0 overflow-hidden bg-gray-900/50"
@@ -366,13 +274,6 @@ const Tracks = () => {
         onPlayPause={() => handlePlayPause()}
         onNext={handleNext}
         onPrevious={handlePrevious}
-      />
-      
-      <DownloadProgress 
-        isDownloading={downloadState.isDownloading}
-        progress={downloadState.progress}
-        filename={downloadState.filename}
-        status={downloadState.status}
       />
       
       <Footer />

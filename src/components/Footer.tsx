@@ -2,56 +2,9 @@
 import { Music, Youtube, Instagram, Twitter, Facebook, Shield } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
-import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 
 const Footer = () => {
   const { admin } = useAdminAuth();
-  const [email, setEmail] = useState("");
-  const [isSubscribing, setIsSubscribing] = useState(false);
-  const { toast } = useToast();
-
-  const handleSubscribe = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!email.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter a valid email address",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsSubscribing(true);
-
-    try {
-      const { data, error } = await supabase.functions.invoke('subscribe-email', {
-        body: { email: email.trim() }
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      toast({
-        title: "Success!",
-        description: data.message || "Successfully subscribed to our newsletter!",
-      });
-      
-      setEmail("");
-    } catch (error: any) {
-      console.error('Subscription error:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to subscribe. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubscribing(false);
-    }
-  };
 
   return (
     <footer className="bg-black border-t border-gray-800/50 py-16">
@@ -93,11 +46,18 @@ const Footer = () => {
               <li><Link to="/downloads" className="text-gray-400 hover:text-green-400 transition-colors duration-300 hover:translate-x-2 inline-block">Downloads</Link></li>
               <li><Link to="/news" className="text-gray-400 hover:text-green-400 transition-colors duration-300 hover:translate-x-2 inline-block">News</Link></li>
               <li><Link to="/videos" className="text-gray-400 hover:text-green-400 transition-colors duration-300 hover:translate-x-2 inline-block">Videos</Link></li>
-              {admin && (
+              {admin ? (
                 <li>
                   <Link to="/admin" className="text-green-400 hover:text-green-300 transition-colors duration-300 hover:translate-x-2 inline-block flex items-center gap-1">
                     <Shield className="h-4 w-4" />
                     Admin Dashboard
+                  </Link>
+                </li>
+              ) : (
+                <li>
+                  <Link to="/admin/login" className="text-gray-400 hover:text-green-400 transition-colors duration-300 hover:translate-x-2 inline-block flex items-center gap-1">
+                    <Shield className="h-4 w-4" />
+                    Admin Login
                   </Link>
                 </li>
               )}
@@ -125,24 +85,16 @@ const Footer = () => {
             </div>
             
             {/* Newsletter Signup */}
-            <form onSubmit={handleSubscribe} className="flex items-center space-x-3">
+            <div className="flex items-center space-x-3">
               <input 
                 type="email" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email" 
                 className="bg-gray-800/50 border border-gray-700 rounded-full px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-green-500 transition-colors"
-                disabled={isSubscribing}
-                required
               />
-              <button 
-                type="submit"
-                disabled={isSubscribing}
-                className="spotify-green text-black font-semibold px-6 py-2 rounded-full hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSubscribing ? "Subscribing..." : "Subscribe"}
+              <button className="spotify-green text-black font-semibold px-6 py-2 rounded-full hover:scale-105 transition-transform">
+                Subscribe
               </button>
-            </form>
+            </div>
           </div>
         </div>
       </div>
