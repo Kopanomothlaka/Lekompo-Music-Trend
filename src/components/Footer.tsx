@@ -1,5 +1,4 @@
-
-import { Music, Youtube, Instagram, Twitter, Facebook, Shield } from "lucide-react";
+import { Music, Youtube, Instagram, Twitter, Facebook, Shield, Info, FileText, Scale } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
 
@@ -46,6 +45,27 @@ const Footer = () => {
               <li><Link to="/downloads" className="text-gray-400 hover:text-green-400 transition-colors duration-300 hover:translate-x-2 inline-block">Downloads</Link></li>
               <li><Link to="/news" className="text-gray-400 hover:text-green-400 transition-colors duration-300 hover:translate-x-2 inline-block">News</Link></li>
               <li><Link to="/videos" className="text-gray-400 hover:text-green-400 transition-colors duration-300 hover:translate-x-2 inline-block">Videos</Link></li>
+              <li><Link to="/about" className="text-gray-400 hover:text-green-400 transition-colors duration-300 hover:translate-x-2 inline-block flex items-center gap-1">
+                <Info className="h-4 w-4" />
+                About Us
+              </Link></li>
+            </ul>
+          </div>
+          
+          {/* Legal & Support */}
+          <div className="animate-slide-up" style={{animationDelay: '0.2s'}}>
+            <h4 className="text-white font-bold mb-6 text-lg">Legal & Support</h4>
+            <ul className="space-y-3">
+              <li><Link to="/privacy" className="text-gray-400 hover:text-green-400 transition-colors duration-300 hover:translate-x-2 inline-block flex items-center gap-1">
+                <FileText className="h-4 w-4" />
+                Privacy Policy
+              </Link></li>
+              <li><Link to="/terms" className="text-gray-400 hover:text-green-400 transition-colors duration-300 hover:translate-x-2 inline-block flex items-center gap-1">
+                <Scale className="h-4 w-4" />
+                Terms of Service
+              </Link></li>
+              <li><a href="mailto:support@lekompo.com" className="text-gray-400 hover:text-green-400 transition-colors duration-300 hover:translate-x-2 inline-block">Support</a></li>
+              <li><a href="mailto:info@lekompo.com" className="text-gray-400 hover:text-green-400 transition-colors duration-300 hover:translate-x-2 inline-block">Contact</a></li>
               {admin ? (
                 <li>
                   <Link to="/admin" className="text-green-400 hover:text-green-300 transition-colors duration-300 hover:translate-x-2 inline-block flex items-center gap-1">
@@ -63,24 +83,13 @@ const Footer = () => {
               )}
             </ul>
           </div>
-          
-          {/* Community */}
-          <div className="animate-slide-up" style={{animationDelay: '0.2s'}}>
-            <h4 className="text-white font-bold mb-6 text-lg">Community</h4>
-            <ul className="space-y-3">
-              <li><a href="#" className="text-gray-400 hover:text-green-400 transition-colors duration-300 hover:translate-x-2 inline-block">Artists</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-green-400 transition-colors duration-300 hover:translate-x-2 inline-block">Events</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-green-400 transition-colors duration-300 hover:translate-x-2 inline-block">Forum</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-green-400 transition-colors duration-300 hover:translate-x-2 inline-block">Support</a></li>
-            </ul>
-          </div>
         </div>
         
         {/* Bottom Section */}
         <div className="border-t border-gray-800/50 mt-12 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="text-gray-400 text-center md:text-left mb-4 md:mb-0">
-              <p>&copy; 2025 Lekompo Music  . All rights reserved.</p>
+              <p>&copy; 2025 Lekompo Music. All rights reserved.</p>
               <p className="text-sm mt-1">Made with ❤️ for the Lekompo community.</p>
             </div>
             
