@@ -147,7 +147,8 @@ const VideoSection = () => {
                           <img 
                             src={featuredVideo.thumbnail_url || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&h=340&fit=crop"} 
                             alt={featuredVideo.title}
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                            className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-110"
+                            loading="lazy"
                           />
                         </div>
                         
@@ -229,11 +230,12 @@ const VideoSection = () => {
                   >
                     <CardContent className="p-0">
                       <div className="relative overflow-hidden">
-                        <div className="w-full h-48 overflow-hidden">
+                        <div className="aspect-video w-full overflow-hidden">
                           <img 
                             src={video.thumbnail_url || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&h=340&fit=crop"} 
                             alt={video.title}
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                            className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-110"
+                            loading="lazy"
                           />
                         </div>
                         

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Play, Heart, Download, Calendar, User } from 'lucide-react';
+import { Play, Heart, Download, Calendar, User, Pause } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
@@ -151,11 +151,14 @@ const Songs = () => {
                 >
                   <CardContent className="p-0">
                     <div className="relative overflow-hidden">
-                      <img 
-                        src={song.image_url || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"} 
-                        alt={song.title}
-                        className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110"
-                      />
+                      <div className="aspect-square w-full overflow-hidden">
+                        <img 
+                          src={song.image_url || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"} 
+                          alt={song.title}
+                          className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-110"
+                          loading="lazy"
+                        />
+                      </div>
                       
                       {/* Play overlay */}
                       <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center">
@@ -163,7 +166,11 @@ const Songs = () => {
                           onClick={() => handlePlaySong(song, index)}
                           className="spotify-green rounded-full w-14 h-14 p-0 shadow-2xl"
                         >
-                          <Play className="h-5 w-5 text-black ml-0.5" fill="currentColor" />
+                          {currentSong?.id === song.id && isPlaying ? (
+                            <Pause className="h-5 w-5 text-black" fill="currentColor" />
+                          ) : (
+                            <Play className="h-5 w-5 text-black ml-0.5" fill="currentColor" />
+                          )}
                         </Button>
                       </div>
                       
@@ -221,8 +228,17 @@ const Songs = () => {
                           onClick={() => handlePlaySong(song, index)}
                           className="flex-1 spotify-green hover:scale-105 text-black font-semibold rounded-full transition-all duration-300 text-xs py-2"
                         >
-                          <Play className="mr-1 h-3 w-3" />
-                          Play
+                          {currentSong?.id === song.id && isPlaying ? (
+                            <>
+                              <Pause className="mr-1 h-3 w-3" />
+                              Pause
+                            </>
+                          ) : (
+                            <>
+                              <Play className="mr-1 h-3 w-3" />
+                              Play
+                            </>
+                          )}
                         </Button>
                         
                         <Button 

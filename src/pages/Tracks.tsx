@@ -170,11 +170,12 @@ const Tracks = () => {
                 >
                   <CardContent className="p-0">
                     <div className="relative overflow-hidden">
-                      <div className="w-full h-64 overflow-hidden">
+                      <div className="aspect-square w-full overflow-hidden">
                         <img 
                           src={song.image_url || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop"} 
                           alt={song.title}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                          className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-110"
+                          loading="lazy"
                         />
                       </div>
                       

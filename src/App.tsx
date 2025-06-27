@@ -8,6 +8,7 @@ import ProtectedAdminRoute from "@/components/ProtectedAdminRoute";
 import Index from "./pages/Index";
 import Tracks from "./pages/Tracks";
 import News from "./pages/News";
+import NewsDetail from "./pages/NewsDetail";
 import Videos from "./pages/Videos";
 import Downloads from "./pages/Downloads";
 import Admin from "./pages/Admin";
@@ -27,6 +28,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/tracks" element={<Tracks />} />
             <Route path="/news" element={<News />} />
+            <Route path="/news/:id" element={<NewsDetail />} />
             <Route path="/videos" element={<Videos />} />
             <Route path="/downloads" element={<Downloads />} />
             <Route path="/admin/login" element={<AdminLogin />} />

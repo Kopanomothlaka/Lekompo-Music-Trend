@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Play, Pause, SkipBack, SkipForward, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -84,11 +83,14 @@ const MusicPlayer = ({ currentSong, isPlaying, onPlayPause, onNext, onPrevious }
         <div className="flex items-center gap-4">
           {/* Song Info */}
           <div className="flex items-center gap-3 min-w-0 flex-1">
-            <img
-              src={currentSong.image_url || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=60&h=60&fit=crop"}
-              alt={currentSong.title}
-              className="w-12 h-12 rounded object-cover"
-            />
+            <div className="w-12 h-12 rounded overflow-hidden flex-shrink-0">
+              <img
+                src={currentSong.image_url || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=60&h=60&fit=crop"}
+                alt={currentSong.title}
+                className="w-full h-full object-cover object-center"
+                loading="lazy"
+              />
+            </div>
             <div className="min-w-0">
               <h4 className="text-white font-medium truncate">{currentSong.title}</h4>
               <p className="text-gray-400 text-sm truncate">{currentSong.artist}</p>

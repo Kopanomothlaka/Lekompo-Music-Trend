@@ -1,23 +1,20 @@
-
 import { Calendar, ArrowRight, User, Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useState } from "react";
-import NewsDetail from "./NewsDetail";
 
 const NewsSection = () => {
-  const [selectedArticle, setSelectedArticle] = useState<any>(null);
+  const navigate = useNavigate();
 
   const { data: newsItems = [], isLoading } = useQuery({
-    queryKey: ['news-articles'],
+    queryKey: ['news'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('news')
         .select('*')
-        .order('created_at', { ascending: false })
-        .limit(4);
+        .order('created_at', { ascending: false });
       
       if (error) {
         console.error('Error fetching news:', error);
@@ -29,7 +26,7 @@ const NewsSection = () => {
   });
 
   const handleReadArticle = (article: any) => {
-    setSelectedArticle(article);
+    navigate(`/news/${article.id}`);
   };
 
   if (isLoading) {
@@ -80,11 +77,14 @@ const NewsSection = () => {
                   <CardContent className="p-0">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
                       <div className="relative overflow-hidden h-64 lg:h-auto">
-                        <img 
-                          src={featuredNews.image_url || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&h=400&fit=crop"} 
-                          alt={featuredNews.title}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                        />
+                        <div className="w-full h-full overflow-hidden">
+                          <img 
+                            src={featuredNews.image_url || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&h=400&fit=crop"} 
+                            alt={featuredNews.title}
+                            className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-110"
+                            loading="lazy"
+                          />
+                        </div>
                         <div className="absolute top-4 left-4">
                           <span className="px-4 py-2 spotify-green text-black text-sm font-bold rounded-full">
                             FEATURED
@@ -147,11 +147,14 @@ const NewsSection = () => {
                   >
                     <CardContent className="p-0">
                       <div className="relative overflow-hidden">
-                        <img 
-                          src={item.image_url || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&h=400&fit=crop"} 
-                          alt={item.title}
-                          className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110"
-                        />
+                        <div className="aspect-[4/3] w-full overflow-hidden">
+                          <img 
+                            src={item.image_url || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&h=400&fit=crop"} 
+                            alt={item.title}
+                            className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-110"
+                            loading="lazy"
+                          />
+                        </div>
                         <div className="absolute top-4 left-4">
                           <span className="px-3 py-1 bg-green-500/20 backdrop-blur-sm text-green-300 text-sm rounded-full font-medium">
                             {item.category || 'News'}
@@ -196,18 +199,15 @@ const NewsSection = () => {
                 ))}
               </div>
             )}
-
-            {/* News Article Detail Dialog */}
-            <NewsDetail 
-              article={selectedArticle} 
-              isOpen={!!selectedArticle} 
-              onClose={() => setSelectedArticle(null)} 
-            />
           </>
         )}
         
         <div className="text-center mt-16">
-          <Button variant="outline" className="border-green-500 text-green-400 hover:bg-green-500/10 px-8 py-3 rounded-full font-semibold">
+          <Button 
+            variant="outline" 
+            className="border-green-500 text-green-400 hover:bg-green-500/10 px-8 py-3 rounded-full font-semibold"
+            onClick={() => navigate('/news')}
+          >
             View All News
           </Button>
         </div>
