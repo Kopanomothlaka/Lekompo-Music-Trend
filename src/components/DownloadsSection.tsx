@@ -1,4 +1,3 @@
-
 import { Download, Calendar, User, Play, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -22,6 +21,49 @@ const DownloadsSection = () => {
       return data || [];
     }
   });
+
+  const handleDownload = async (track: any) => {
+    if (!track.download_url) return;
+    
+    try {
+      // For mobile devices, use a simpler download approach
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      
+      if (isMobile) {
+        // Direct download link for mobile - faster and more reliable
+        const link = document.createElement('a');
+        link.href = track.download_url;
+        link.download = `${track.title.replace(/[^a-z0-9]/gi, '_')}_by_${track.artist.replace(/[^a-z0-9]/gi, '_')}.mp3`;
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        // Desktop approach with blob for better file naming
+        const response = await fetch(track.download_url);
+        if (!response.ok) {
+          throw new Error(`Failed to download: ${response.statusText}`);
+        }
+        
+        const blob = await response.blob();
+        const safeTitle = track.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        const safeArtist = track.artist.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        const filename = `${safeTitle}_by_${safeArtist}.mp3`;
+        
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      }
+    } catch (error) {
+      console.error('Download error:', error);
+      window.open(track.download_url, '_blank');
+    }
+  };
 
   if (isLoading) {
     return (
@@ -121,17 +163,15 @@ const DownloadsSection = () => {
                       </div>
                     )}
                     
-                    <Button 
-                      className="w-full spotify-green hover:scale-105 text-black font-semibold rounded-full transition-all duration-300"
-                      onClick={() => {
-                        if (track.download_url) {
-                          window.open(track.download_url, '_blank');
-                        }
-                      }}
-                    >
-                      <Download className="mr-2 h-4 w-4" />
-                      Download Free
-                    </Button>
+                    {track.download_url && (
+                      <Button 
+                        className="w-full spotify-green hover:scale-105 text-black font-semibold rounded-full transition-all duration-300"
+                        onClick={() => handleDownload(track)}
+                      >
+                        <Download className="mr-2 h-4 w-4" />
+                        Download Free
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>

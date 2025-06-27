@@ -71,24 +71,47 @@ const TracksSection = ({ onSongSelect, onPlayPause, currentSong, isPlaying }: Tr
   };
 
   // UPDATED DOWNLOAD HANDLER - DIRECT DOWNLOAD WITHOUT NEW WINDOW
-  const handleDownload = (track: Song) => {
+  const handleDownload = async (track: Song) => {
     if (!track.download_url) return;
     
     try {
-      const safeTitle = track.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-      const safeArtist = track.artist.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-      const filename = `${safeTitle}_by_${safeArtist}.mp3`;
+      // For mobile devices, use a simpler download approach
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
       
-      const link = document.createElement('a');
-      link.href = track.download_url;
-      link.download = filename;
-      link.style.display = 'none';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      if (isMobile) {
+        // Direct download link for mobile - faster and more reliable
+        const link = document.createElement('a');
+        link.href = track.download_url;
+        link.download = `${track.title.replace(/[^a-z0-9]/gi, '_')}_by_${track.artist.replace(/[^a-z0-9]/gi, '_')}.mp3`;
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        // Desktop approach with blob for better file naming
+        const response = await fetch(track.download_url);
+        if (!response.ok) {
+          throw new Error(`Failed to download: ${response.statusText}`);
+        }
+        
+        const blob = await response.blob();
+        const safeTitle = track.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        const safeArtist = track.artist.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        const filename = `${safeTitle}_by_${safeArtist}.mp3`;
+        
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      }
     } catch (error) {
       console.error('Download error:', error);
-      // Removed window.open() to prevent new tab
+      // Fallback to opening in new tab if blob approach fails
+      window.open(track.download_url, '_blank');
     }
   };
 

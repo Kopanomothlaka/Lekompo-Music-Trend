@@ -1,10 +1,11 @@
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Play, Heart, Download, Calendar, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { downloadFile, sanitizeFilename } from '@/lib/utils';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import MusicPlayer from '@/components/MusicPlayer';
@@ -25,6 +26,7 @@ const Downloads = () => {
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const { toast } = useToast();
 
   const { data: tracks = [], isLoading } = useQuery({
     queryKey: ['songs'],
@@ -65,6 +67,37 @@ const Downloads = () => {
     setCurrentSong(tracks[prevIndex]);
     setCurrentIndex(prevIndex);
     setIsPlaying(true);
+  };
+
+  const handleDownload = async (song: Song) => {
+    if (!song.download_url) {
+      toast({
+        title: "Download Unavailable",
+        description: "This track is not available for download.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const filename = sanitizeFilename(song.title, song.artist);
+    
+    await downloadFile({
+      url: song.download_url,
+      filename,
+      onSuccess: () => {
+        toast({
+          title: "Download Started",
+          description: `${song.title} by ${song.artist} is downloading...`,
+        });
+      },
+      onError: (error) => {
+        toast({
+          title: "Download Failed",
+          description: error || "Failed to download the track. Please try again.",
+          variant: "destructive",
+        });
+      },
+    });
   };
 
   if (isLoading) {
@@ -184,17 +217,15 @@ const Downloads = () => {
                             Play
                           </Button>
                           
-                          <Button 
-                            variant="outline"
-                            onClick={() => {
-                              if (track.download_url) {
-                                window.open(track.download_url, '_blank');
-                              }
-                            }}
-                            className="border-green-500 text-green-400 hover:bg-green-500/10 rounded-full px-4"
-                          >
-                            <Download className="h-4 w-4" />
-                          </Button>
+                          {track.download_url && (
+                            <Button 
+                              variant="outline"
+                              onClick={() => handleDownload(track)}
+                              className="border-green-500 text-green-400 hover:bg-green-500/10 rounded-full px-4"
+                            >
+                              <Download className="h-4 w-4" />
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </CardContent>
