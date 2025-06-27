@@ -1,4 +1,3 @@
-
 import { Play, Download, Music } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from 'react-router-dom';
@@ -65,7 +64,7 @@ const HeroSection = () => {
               Play Now
             </Button>
             <Button variant="outline" className="border-green-500 text-green-400 hover:bg-green-500/10 hover:text-green-300 px-12 py-6 text-lg rounded-full transition-all duration-300 hover:scale-105 hover:shadow-xl"
-                    onClick={() => navigate('/tracks')}>
+                    onClick={() => navigate('/downloads')}>
               <Download className="mr-3 h-6 w-6" />
               Free Downloads
             </Button>
