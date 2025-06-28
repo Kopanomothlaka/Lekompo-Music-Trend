@@ -23,6 +23,7 @@ interface Song {
 const Tracks = () => {
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const queryClient = useQueryClient();
 
   const { data: songs = [], isLoading } = useQuery({
@@ -129,6 +130,16 @@ const Tracks = () => {
     }
   };
 
+  // Filter songs based on search query
+  const filteredSongs = songs.filter((song: Song) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      song.title.toLowerCase().includes(query) ||
+      song.artist.toLowerCase().includes(query) ||
+      (song.genre && song.genre.join(' ').toLowerCase().includes(query))
+    );
+  });
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-black text-white">
@@ -157,13 +168,24 @@ const Tracks = () => {
             </p>
           </div>
 
-          {songs.length === 0 ? (
+          {/* Search Input */}
+          <div className="flex justify-center mb-10">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Search by title, artist, or genre..."
+              className="w-full max-w-md px-5 py-3 rounded-full bg-gray-800 border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:border-green-500 transition-colors"
+            />
+          </div>
+
+          {filteredSongs.length === 0 ? (
             <div className="text-center">
-              <p className="text-xl text-gray-400">No tracks available yet.</p>
+              <p className="text-xl text-gray-400">No tracks found for your search.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {songs.map((song) => (
+              {filteredSongs.map((song) => (
                 <Card 
                   key={song.id} 
                   className="spotify-card group cursor-pointer border-0 overflow-hidden bg-gray-900/50"

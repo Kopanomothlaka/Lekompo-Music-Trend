@@ -205,8 +205,11 @@ const NewsSection = () => {
         <div className="text-center mt-16">
           <Button 
             variant="outline" 
-            className="border-green-500 text-green-400 hover:bg-green-500/10 px-8 py-3 rounded-full font-semibold"
-            onClick={() => navigate('/news')}
+            className="border-green-500 text-green-400 hover:bg-green-500/10 px-8 py-3 rounded-full font-semibold hover:scale-105 transition-transform"
+            onClick={() => {
+              console.log('View All News clicked - navigating to /news');
+              navigate('/news');
+            }}
           >
             View All News
           </Button>
