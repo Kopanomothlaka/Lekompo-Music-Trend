@@ -85,7 +85,7 @@ const VideoSection = () => {
 
   // Function to visit YouTube channel
   const visitYouTubeChannel = () => {
-    const channelUrl = "https://www.youtube.com/@LovableLekompo";
+    const channelUrl = "https://www.youtube.com/@Lekompo";
     window.open(channelUrl, '_blank');
   };
 
