@@ -133,7 +133,7 @@ const TermsOfService = () => {
                 </p>
                 <p className="text-gray-300">
                   <strong>Email:</strong> legal@lekompo.com<br />
-                  <strong>Address:</strong> Lekompo Groove Hub, [Your Address]
+                  <strong>Address:</strong> Lekompo Groove Hub, 233 Fox Street, Johannesburg, South Africa
                 </p>
               </section>
             </div>
