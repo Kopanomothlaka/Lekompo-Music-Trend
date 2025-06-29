@@ -1,4 +1,4 @@
-import { Music, Youtube, Instagram, Twitter, Facebook, Shield, Info, FileText, Scale, Mail } from "lucide-react";
+import { Music, Youtube, Instagram, Twitter, Facebook, Shield, Info, FileText, Scale, Mail, BookOpen } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
 import { useState } from "react";
@@ -96,6 +96,10 @@ const Footer = () => {
               <li><Link to="/about" className="text-gray-400 hover:text-green-400 transition-colors duration-300 hover:translate-x-2 inline-block flex items-center gap-1">
                 <Info className="h-4 w-4" />
                 About Us
+              </Link></li>
+              <li><Link to="/education" className="text-gray-400 hover:text-green-400 transition-colors duration-300 hover:translate-x-2 inline-block flex items-center gap-1">
+                <BookOpen className="h-4 w-4" />
+                Education
               </Link></li>
             </ul>
           </div>

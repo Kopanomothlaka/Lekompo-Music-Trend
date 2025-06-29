@@ -13,6 +13,7 @@ import NewsDetail from "./pages/NewsDetail";
 import Videos from "./pages/Videos";
 import Downloads from "./pages/Downloads";
 import About from "./pages/About";
+import Education from "./pages/Education";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import Admin from "./pages/Admin";
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="/videos" element={<Videos />} />
             <Route path="/downloads" element={<Downloads />} />
             <Route path="/about" element={<About />} />
+            <Route path="/education" element={<Education />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/admin/login" element={<AdminLogin />} />
