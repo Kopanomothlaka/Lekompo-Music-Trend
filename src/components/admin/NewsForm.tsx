@@ -15,6 +15,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 interface NewsFormProps {
   onClose: () => void;
@@ -110,7 +112,24 @@ const NewsForm: React.FC<NewsFormProps> = ({ onClose, editData }) => {
   ];
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+    <>
+      <style>{`
+        .ql-container {
+          resize: vertical;
+          min-height: 150px;
+          max-height: 600px;
+          overflow: auto;
+        }
+        .ql-editor a {
+          color: #2563eb;
+          text-decoration: underline;
+          transition: color 0.2s;
+        }
+        .ql-editor a:hover {
+          color: #1d4ed8;
+        }
+      `}</style>
+      <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
       <div>
         <Label htmlFor="news-title">Title *</Label>
         <Input
@@ -210,13 +229,12 @@ const NewsForm: React.FC<NewsFormProps> = ({ onClose, editData }) => {
       
       <div>
         <Label htmlFor="content">Content</Label>
-        <Textarea
+        <ReactQuill
           id="content"
           value={formData.content}
-          onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-          rows={6}
-          placeholder="Full article content"
-          className="min-h-[150px]"
+          onChange={(value) => setFormData({ ...formData, content: value })}
+          className="min-h-[150px] bg-white text-black rounded"
+          theme="snow"
         />
       </div>
       
@@ -248,6 +266,7 @@ const NewsForm: React.FC<NewsFormProps> = ({ onClose, editData }) => {
         </Button>
       </div>
     </form>
+    </>
   );
 };
 
